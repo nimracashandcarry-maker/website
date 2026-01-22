@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Category } from '@/types/database'
 import { Badge } from '@/components/ui/badge'
-import type { User } from '@supabase/supabase-js'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchBar } from '@/components/SearchBar'
 
@@ -44,7 +44,7 @@ export function Navbar() {
   const itemCount = getUniqueItemCount()
   const [categories, setCategories] = useState<Category[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [mounted, setMounted] = useState(false)

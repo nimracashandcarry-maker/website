@@ -180,7 +180,7 @@ export default function CheckoutPage() {
         const orderId = await createOrder({
           ...data,
           items: orderItems,
-          customer_id: selectedCustomer?.id || undefined,
+          customer_id: selectedCustomer && 'id' in selectedCustomer ? selectedCustomer.id : undefined,
         })
 
         // Save user details for future use (only for regular users, not employees)
@@ -230,7 +230,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <CustomerSelector
                   onSelect={handleCustomerSelect}
-                  selectedCustomerId={selectedCustomer?.id}
+                  selectedCustomerId={selectedCustomer && 'id' in selectedCustomer ? selectedCustomer.id : undefined}
                 />
                 {selectedCustomer && (
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-6">

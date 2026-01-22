@@ -2,11 +2,10 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getProductsCached, searchProducts } from '@/lib/actions/products'
-import { NavbarServer } from '@/components/NavbarServer'
+import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { QuickAddToCart } from '@/components/QuickAddToCart'
 import {
-  NavbarSkeleton,
   ProductGridSkeleton,
   QuickAddToCartSkeleton
 } from '@/components/skeletons'
@@ -104,9 +103,7 @@ export default async function ProductsPage({
 
   return (
     <>
-      <Suspense fallback={<NavbarSkeleton />}>
-        <NavbarServer />
-      </Suspense>
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-4">

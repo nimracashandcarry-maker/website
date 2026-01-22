@@ -14,33 +14,6 @@ function Shimmer({ className }: { className?: string }) {
   )
 }
 
-// Navbar skeleton
-export function NavbarSkeleton() {
-  return (
-    <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md border-b shadow-sm px-4 py-3">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shimmer className="w-10 h-10 rounded-lg" />
-            <Shimmer className="w-24 h-6 rounded" />
-          </div>
-          <div className="hidden md:flex items-center gap-4">
-            <Shimmer className="w-16 h-8 rounded-full" />
-            <Shimmer className="w-20 h-8 rounded-full" />
-            <Shimmer className="w-16 h-8 rounded-full" />
-            <Shimmer className="w-16 h-8 rounded-full" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Shimmer className="w-10 h-10 rounded-full" />
-            <Shimmer className="w-10 h-10 rounded-full" />
-            <Shimmer className="w-20 h-10 rounded-full" />
-          </div>
-        </div>
-      </div>
-    </nav>
-  )
-}
-
 // Product card skeleton
 export function ProductCardSkeleton() {
   return (
@@ -141,7 +114,6 @@ export function QuickAddToCartSkeleton() {
 export function PageSkeleton() {
   return (
     <div className="min-h-screen">
-      <NavbarSkeleton />
       <div className="pt-20">
         <div className="container mx-auto px-4 py-8">
           <Shimmer className="h-10 w-64 rounded mb-8" />

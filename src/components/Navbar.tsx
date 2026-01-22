@@ -145,17 +145,6 @@ export function Navbar({ initialCategories }: NavbarProps) {
             <div className="hidden md:flex items-center gap-6">
               <NavigationMenu>
                 <NavigationMenuList className="gap-2">
-                  <NavigationMenuItem>
-                    <NavigationMenuLink asChild>
-                      <Link href="/" className={cn(
-                        "px-4 py-2 rounded-full text-sm font-medium transition-colors hover:bg-primary/10",
-                        showTransparent ? "text-white hover:text-white hover:bg-white/20" : "text-foreground hover:text-primary"
-                      )}>
-                        Home
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
-
                   {categories.length > 0 && (
                     <NavigationMenuItem>
                       <NavigationMenuTrigger className={cn(
@@ -337,13 +326,6 @@ export function Navbar({ initialCategories }: NavbarProps) {
                       <div className="px-2">
                         <SearchBar onClose={() => setIsOpen(false)} />
                       </div>
-                      <Link
-                        href="/"
-                        onClick={() => setIsOpen(false)}
-                        className="px-4 py-3 rounded-lg hover:bg-muted transition-colors text-lg font-medium"
-                      >
-                        Home
-                      </Link>
 
                       {categories.length > 0 && (
                         <div className="space-y-2">

@@ -4,11 +4,10 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getCategoryBySlug } from '@/lib/actions/categories'
 import { getProductsByCategorySlug } from '@/lib/actions/products'
-import { NavbarServer } from '@/components/NavbarServer'
+import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { QuickAddToCart } from '@/components/QuickAddToCart'
 import {
-  NavbarSkeleton,
   ProductGridSkeleton,
   QuickAddToCartSkeleton
 } from '@/components/skeletons'
@@ -89,9 +88,7 @@ export default async function CategoryPage({
 
   return (
     <>
-      <Suspense fallback={<NavbarSkeleton />}>
-        <NavbarServer />
-      </Suspense>
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         <Link href="/" className="text-muted-foreground hover:underline mb-4 inline-block">

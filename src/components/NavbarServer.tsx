@@ -1,6 +1,4 @@
-import { Suspense } from 'react'
 import { Navbar } from './Navbar'
-import { NavbarSkeleton } from './skeletons'
 import { getCategoriesCached } from '@/lib/actions/categories'
 
 // Server component that fetches categories and passes to client Navbar
@@ -10,11 +8,7 @@ export async function NavbarServer() {
   return <Navbar initialCategories={categories} />
 }
 
-// Wrapper with Suspense for easy usage
+// Direct export - navbar renders immediately, categories load dynamically if needed
 export function NavbarWithSuspense() {
-  return (
-    <Suspense fallback={<NavbarSkeleton />}>
-      <NavbarServer />
-    </Suspense>
-  )
+  return <Navbar />
 }

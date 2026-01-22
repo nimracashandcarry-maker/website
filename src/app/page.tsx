@@ -2,13 +2,12 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { getCategoriesWithImagesCached } from '@/lib/actions/categories'
 import { getFeaturedProductsCached } from '@/lib/actions/products'
-import { NavbarServer } from '@/components/NavbarServer'
+import { Navbar } from '@/components/Navbar'
 import { Hero } from '@/components/Hero'
 import { CategoryGrid } from '@/components/CategoryGrid'
 import { ProductCard } from '@/components/ProductCard'
 import { Footer } from '@/components/Footer'
 import {
-  NavbarSkeleton,
   CategoryGridSkeleton,
   FeaturedProductsSkeleton
 } from '@/components/skeletons'
@@ -64,9 +63,7 @@ const features = [
 export default function HomePage() {
   return (
     <>
-      <Suspense fallback={<NavbarSkeleton />}>
-        <NavbarServer />
-      </Suspense>
+      <Navbar />
 
       <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
         <Hero />

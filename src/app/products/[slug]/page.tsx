@@ -3,11 +3,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getFeaturedProductsCached } from '@/lib/actions/products'
-import { NavbarServer } from '@/components/NavbarServer'
+import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ProductActions } from '@/components/ProductActions'
 import { FeaturedProductsSlider } from '@/components/FeaturedProductsSlider'
-import { NavbarSkeleton, FeaturedProductsSkeleton } from '@/components/skeletons'
+import { FeaturedProductsSkeleton } from '@/components/skeletons'
 
 // Revalidate product pages every 30 minutes
 export const revalidate = 1800
@@ -41,9 +41,7 @@ export default async function ProductDetailPage({
 
   return (
     <>
-      <Suspense fallback={<NavbarSkeleton />}>
-        <NavbarServer />
-      </Suspense>
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         <Link href="/products" className="text-muted-foreground hover:underline mb-4 inline-block">

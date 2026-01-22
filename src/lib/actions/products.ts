@@ -137,3 +137,8 @@ export async function searchProducts(query: string): Promise<Product[]> {
 
   return data || []
 }
+
+// Aliases for consistency - uses page-level revalidate for caching
+export const getProductsCached = getProducts
+export const getFeaturedProductsCached = getFeaturedProducts
+export const getProductBySlugCached = getProductBySlug

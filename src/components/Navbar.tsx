@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
@@ -37,18 +37,24 @@ import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SearchBar } from '@/components/SearchBar'
 
-export function Navbar() {
+interface NavbarProps {
+  initialCategories?: Category[]
+}
+
+export function Navbar({ initialCategories }: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { getUniqueItemCount } = useCart()
   const itemCount = getUniqueItemCount()
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>(initialCategories || [])
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const supabase = createClient()
+
+  // Memoize supabase client to avoid recreating on each render
+  const supabase = useMemo(() => createClient(), [])
 
   // Prevent hydration mismatch by only rendering interactive elements after mount
   useEffect(() => {
@@ -61,23 +67,21 @@ export function Navbar() {
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
+      setIsScrolled(window.scrollY > 20)
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
-    // Fetch categories on client side
-    fetch('/api/categories')
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch(() => setCategories([]))
+    // Only fetch categories if not provided from server
+    if (!initialCategories || initialCategories.length === 0) {
+      fetch('/api/categories')
+        .then((res) => res.json())
+        .then((data) => setCategories(data))
+        .catch(() => setCategories([]))
+    }
 
     // Get current user session
     const checkAuth = async () => {
@@ -94,7 +98,7 @@ export function Navbar() {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [supabase, initialCategories])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()

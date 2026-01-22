@@ -2,8 +2,15 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Navbar } from '@/components/Navbar'
+import dynamic from 'next/dynamic'
 import { Footer } from '@/components/Footer'
+import { NavbarSkeleton } from '@/components/skeletons'
+
+// Lazy load Navbar for better performance
+const Navbar = dynamic(() => import('@/components/Navbar').then(mod => ({ default: mod.Navbar })), {
+  loading: () => <NavbarSkeleton />,
+  ssr: false
+})
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { CheckCircle2, Users, Truck, Globe } from 'lucide-react'

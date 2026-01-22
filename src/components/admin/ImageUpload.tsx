@@ -21,7 +21,10 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
   // Update preview when value changes (from props)
   useEffect(() => {
     if (value && !selectedFile) {
-      setPreview(value)
+      const frameId = requestAnimationFrame(() => {
+        setPreview(value)
+      })
+      return () => cancelAnimationFrame(frameId)
     }
   }, [value, selectedFile])
 

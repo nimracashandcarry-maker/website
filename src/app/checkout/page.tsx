@@ -19,6 +19,20 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
+type Customer = {
+  id: string
+  name: string
+  email: string | null
+  phone: string
+  shipping_address: string
+  city: string | null
+  eir: string | null
+  vat_number: string
+}
+
+type NewCustomerData = Omit<Customer, 'id'> & { isNew: true }
+type CustomerOrNew = Customer | NewCustomerData
+
 const checkoutSchema = z.object({
   customer_name: z.string().min(1, 'Name is required'),
   customer_email: z.string().email('Invalid email address').optional().or(z.literal('')),
@@ -39,7 +53,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [isEmployee, setIsEmployee] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerOrNew | null>(null)
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -126,7 +140,7 @@ export default function CheckoutPage() {
     return null
   }
 
-  const handleCustomerSelect = (customer: any) => {
+  const handleCustomerSelect = (customer: CustomerOrNew | null) => {
     if (customer) {
       setSelectedCustomer(customer)
       form.reset({

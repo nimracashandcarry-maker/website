@@ -21,14 +21,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart))
-      } catch (error) {
-        console.error('Error loading cart from localStorage:', error)
+    const frameId = requestAnimationFrame(() => {
+      const savedCart = localStorage.getItem('cart')
+      if (savedCart) {
+        try {
+          setItems(JSON.parse(savedCart))
+        } catch (error) {
+          console.error('Error loading cart from localStorage:', error)
+        }
       }
-    }
+    })
+    return () => cancelAnimationFrame(frameId)
   }, [])
 
   // Save cart to localStorage whenever it changes

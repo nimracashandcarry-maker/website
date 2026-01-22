@@ -29,8 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { TableSkeleton } from '@/components/admin/TableSkeleton'
 import { Product } from '@/types/database'
 import { Pencil, Trash2, Search, X } from 'lucide-react'
 

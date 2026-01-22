@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { Order, OrderItem } from '@/types/database'
+import { Order } from '@/types/database'
 import { sendOrderConfirmationEmail, sendNewOrderNotificationEmail } from '@/lib/email'
 
 export async function createOrder(orderData: {

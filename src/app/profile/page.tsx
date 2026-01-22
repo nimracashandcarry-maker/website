@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import type { User } from '@supabase/supabase-js'
 
 const profileSchema = z.object({
   full_name: z.string().min(1, 'Full name is required'),
@@ -35,7 +36,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>
 export default function ProfilePage() {
   const router = useRouter()
   const supabase = createClient()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState('')

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ShoppingCart, Zap } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import type { User } from '@supabase/supabase-js'
 
 export function ProductActions({ product }: { product: Product }) {
   const router = useRouter()
@@ -16,7 +17,7 @@ export function ProductActions({ product }: { product: Product }) {
   const { addToCart } = useCart()
   const { toast } = useToast()
   const [quantity, setQuantity] = useState(1)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     // Check session first, which is more reliable

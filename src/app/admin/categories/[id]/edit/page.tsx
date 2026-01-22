@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { getCategoryById } from '@/lib/actions/categories'
 import { CategoryForm } from '@/components/admin/CategoryForm'
 
 async function getCategory(id: string) {

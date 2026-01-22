@@ -40,7 +40,6 @@ type CustomerOrNew = Customer | NewCustomerData
 
 export function CustomerSelector({
   onSelect,
-  selectedCustomerId,
 }: {
   onSelect: (customer: CustomerOrNew | null) => void
   selectedCustomerId?: string | null
@@ -341,7 +340,7 @@ export function CustomerSelector({
             <div className="p-8 text-center text-muted-foreground">
               {searchInput ? (
                 <>
-                  <p>No customers found for "{searchInput}"</p>
+                  <p>No customers found for &quot;{searchInput}&quot;</p>
                   <Button
                     variant="link"
                     onClick={() => setShowAddForm(true)}

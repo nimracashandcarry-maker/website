@@ -88,7 +88,7 @@ export default function ContactPage() {
             </Link>
             <h1 className="text-4xl md:text-5xl font-bold mt-4">Contact Us</h1>
             <p className="text-muted-foreground text-lg mt-3 max-w-2xl">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+              Have questions? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function ContactPage() {
                     Message Sent!
                   </h3>
                   <p className="text-green-700 dark:text-green-300 mb-4">
-                    Thank you for contacting us. We'll get back to you within 24 hours.
+                    Thank you for contacting us. We&apos;ll get back to you within 24 hours.
                   </p>
                   <Button onClick={() => setIsSubmitted(false)} variant="outline">
                     Send Another Message

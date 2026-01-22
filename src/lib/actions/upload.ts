@@ -39,7 +39,7 @@ export async function uploadProductImage(formData: FormData): Promise<string> {
   const bytes = new Uint8Array(arrayBuffer)
 
   // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('product-images')
     .upload(filePath, bytes, {
       contentType: file.type,

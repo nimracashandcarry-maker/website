@@ -193,7 +193,7 @@ export function SearchBar({ onClose, className, inputClassName, showTransparent 
                 handleResultClick()
               }}
             >
-              View all results for "{query}"
+              View all results for &quot;{query}&quot;
             </Button>
           </div>
         </div>
@@ -203,7 +203,7 @@ export function SearchBar({ onClose, className, inputClassName, showTransparent 
       {isOpen && query.trim().length >= 2 && results.length === 0 && !isLoading && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-background border rounded-lg shadow-lg p-4 z-50">
           <p className="text-sm text-muted-foreground text-center">
-            No products found for "{query}"
+            No products found for &quot;{query}&quot;
           </p>
         </div>
       )}

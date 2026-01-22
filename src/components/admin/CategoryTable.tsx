@@ -21,7 +21,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { TableSkeleton } from '@/components/admin/TableSkeleton'
 import { Category } from '@/types/database'
 import { Pencil, Trash2, Search, X } from 'lucide-react'
 

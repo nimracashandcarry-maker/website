@@ -7,15 +7,15 @@ import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart, Zap } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/components/ui/use-toast'
+import type { User } from '@supabase/supabase-js'
 
 export function QuickAddToCart({ product }: { product: Product }) {
   const router = useRouter()
   const supabase = createClient()
   const { addToCart } = useCart()
   const { toast } = useToast()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
     // Check session first, which is more reliable

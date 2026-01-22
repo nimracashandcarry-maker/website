@@ -59,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <div className="mt-auto pt-4 flex items-end justify-between gap-4">
                     <div className="flex flex-col">
                         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80 text-foreground">
-                            ${product.price}
+                            €{product.price}
                         </span>
                     </div>
                 </div>

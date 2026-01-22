@@ -19,6 +19,18 @@ export async function createOrder(orderData: {
   const supabase = await createClient()
   const { getEmployee } = await import('@/lib/auth')
 
+  // Validate that order has items
+  if (!orderData.items || orderData.items.length === 0) {
+    throw new Error('Cannot create an order without any items')
+  }
+
+  // Validate each item has required fields
+  for (const item of orderData.items) {
+    if (!item.product_id || !item.product_name || item.product_price <= 0 || item.quantity <= 0) {
+      throw new Error('Invalid item in order: each item must have a product ID, name, valid price, and quantity')
+    }
+  }
+
   // Get employee if exists (for employee orders)
   const employee = await getEmployee()
   const employeeId = orderData.employee_id || employee?.id || null
@@ -28,6 +40,11 @@ export async function createOrder(orderData: {
     (sum, item) => sum + item.product_price * item.quantity,
     0
   )
+
+  // Validate total amount
+  if (total_amount <= 0) {
+    throw new Error('Order total must be greater than zero')
+  }
 
   // Create order
   const { data: order, error: orderError } = await supabase

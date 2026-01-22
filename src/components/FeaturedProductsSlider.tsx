@@ -64,7 +64,7 @@ export function FeaturedProductsSlider({ products }: { products: Product[] }) {
                     )}
                   </CardHeader>
                   <CardContent className="flex-1">
-                    <p className="text-2xl font-bold">${product.price}</p>
+                    <p className="text-2xl font-bold">€{product.price}</p>
                   </CardContent>
                   <CardFooter>
                     <QuickAddToCart product={product} />

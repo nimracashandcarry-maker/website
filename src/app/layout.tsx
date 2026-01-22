@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nimra Shop - E-commerce Store",
+  title: "NimraCashAndCarry - E-commerce Store",
   description: "A modern e-commerce application built with Next.js and Supabase",
 };
 

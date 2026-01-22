@@ -1,4 +1,4 @@
-# Nimra Shop - E-commerce Application
+# NimraCashAndCarry - E-commerce Application
 
 A modern, full-stack e-commerce application built with Next.js, Supabase, Tailwind CSS, and shadcn/ui.
 
@@ -39,7 +39,7 @@ A modern, full-stack e-commerce application built with Next.js, Supabase, Tailwi
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd Nimra_Shop
+   cd nimracashandcarry
    ```
 
 2. **Install dependencies**

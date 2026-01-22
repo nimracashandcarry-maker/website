@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Navbar } from '@/components/Navbar'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -20,33 +19,104 @@ export default function ResetPasswordPage() {
   const [isValidSession, setIsValidSession] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
-  useEffect(() => {
-    // Check if user has a valid recovery session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (session) {
-        setIsValidSession(true)
-      } else {
-        setError('Invalid or expired reset link. Please request a new password reset.')
+  const handleAuthCallback = useCallback(async () => {
+    // Check for code in URL (PKCE flow)
+    const code = searchParams.get('code')
+    
+    if (code) {
+      try {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error) {
+          setIsValidSession(true)
+          setCheckingSession(false)
+          return true
+        }
+      } catch (e) {
+        console.error('Error exchanging code:', e)
       }
-      setCheckingSession(false)
     }
 
-    checkSession()
-
-    // Listen for auth state changes (Supabase handles the token from URL)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsValidSession(true)
-        setCheckingSession(false)
+    // Check for hash fragments (implicit flow)
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const type = hashParams.get('type')
+      
+      if (accessToken && type === 'recovery') {
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '',
+          })
+          if (!error) {
+            setIsValidSession(true)
+            setCheckingSession(false)
+            // Clear the hash from URL
+            window.history.replaceState(null, '', window.location.pathname)
+            return true
+          }
+        } catch (e) {
+          console.error('Error setting session from hash:', e)
+        }
       }
-    })
+    }
+    
+    return false
+  }, [searchParams, supabase.auth])
 
-    return () => subscription.unsubscribe()
-  }, [supabase])
+  useEffect(() => {
+    let isMounted = true
+
+    const initAuth = async () => {
+      // First, listen for auth state changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!isMounted) return
+        
+        console.log('Auth event:', event, 'Session:', !!session)
+        
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+          setIsValidSession(true)
+          setCheckingSession(false)
+          setError('')
+        }
+      })
+
+      // Try to handle auth callback from URL
+      const handled = await handleAuthCallback()
+      
+      if (!handled && isMounted) {
+        // Check existing session
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          setIsValidSession(true)
+          setCheckingSession(false)
+        } else {
+          // Wait a bit more for any pending auth events
+          setTimeout(() => {
+            if (isMounted && !isValidSession) {
+              setError('Invalid or expired reset link. Please request a new password reset.')
+              setCheckingSession(false)
+            }
+          }, 1500)
+        }
+      }
+
+      return () => {
+        subscription.unsubscribe()
+      }
+    }
+
+    initAuth()
+
+    return () => {
+      isMounted = false
+    }
+  }, [supabase, handleAuthCallback, isValidSession])
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,33 +148,47 @@ export default function ResetPasswordPage() {
     setSuccess(true)
     setLoading(false)
 
-    // Redirect to login after 2 seconds
-    setTimeout(() => {
+    // Sign out and redirect to login after 2 seconds
+    setTimeout(async () => {
+      await supabase.auth.signOut()
       router.push('/login')
     }, 2000)
   }
 
+  // Handle cancel - sign out and go to login
+  const handleCancel = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   if (checkingSession) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Verifying reset link...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Verifying reset link...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Simple header without navigation */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-center">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">NimraCashAndCarry</span>
+            <span className="text-sm text-muted-foreground ml-2">| Secure Password Reset</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-bold">Set new password</h2>
+            <h2 className="text-center text-3xl font-bold">Set new password</h2>
             <p className="mt-2 text-center text-sm text-muted-foreground">
               Enter your new password below
             </p>
@@ -185,14 +269,18 @@ export default function ResetPasswordPage() {
               </div>
 
               <div className="text-center">
-                <Link href="/login" className="text-sm font-medium text-primary hover:underline">
-                  Back to login
-                </Link>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary hover:underline"
+                >
+                  Cancel and return to login
+                </button>
               </div>
             </form>
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }

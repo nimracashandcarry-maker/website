@@ -19,10 +19,10 @@ import {
 
 // UPDATE THESE VALUES WITH YOUR ACTUAL BUSINESS INFORMATION
 const BUSINESS_INFO = {
-  name: 'Nimra Shop',
+  name: 'NimraCashAndCarry',
   address: '123 Business Street, Dublin, Ireland',
   phone: '+353 1 234 5678',
-  email: 'info@nimrashop.com',
+  email: 'info@nimracashandcarry.com',
   hours: {
     weekdays: '9:00 AM - 6:00 PM',
     saturday: '10:00 AM - 4:00 PM',

@@ -137,7 +137,7 @@ export function Navbar({ initialCategories }: NavbarProps) {
                 "text-2xl font-bold tracking-tight transition-colors",
                 showTransparent ? "text-white" : "text-foreground"
               )}>
-                Nimra
+                NimraCashAndCarry
               </span>
             </Link>
 

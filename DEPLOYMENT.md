@@ -1,4 +1,4 @@
-# Deployment Guide for Nimra Shop
+# Deployment Guide for NimraCashAndCarry
 
 ## Option 1: Vercel Automatic Deployment (Recommended)
 

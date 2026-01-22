@@ -46,7 +46,12 @@ export function createClient(): SupabaseClient {
 
   // Use singleton pattern to avoid creating multiple clients
   if (!supabaseClient) {
-    supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey)
+    supabaseClient = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+      },
+    })
   }
 
   return supabaseClient

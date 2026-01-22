@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -48,6 +48,7 @@ export function ProductForm({ product, categories }: { product?: Product; catego
   const [error, setError] = useState('')
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(product?.image_url || null)
+  const errorRef = useRef<HTMLDivElement>(null)
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -73,6 +74,40 @@ export function ProductForm({ product, categories }: { product?: Product; catego
     form.setValue('name', name)
     if (!product) {
       form.setValue('slug', generateSlug(name))
+    }
+  }
+
+  // Scroll to error when it appears
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [error])
+
+  // Scroll to first form field error on validation failure
+  useEffect(() => {
+    const errors = form.formState.errors
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0]
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`)
+      if (errorElement) {
+        setTimeout(() => {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          ;(errorElement as HTMLElement).focus()
+        }, 100)
+      }
+    }
+  }, [form.formState.errors])
+
+  const onError = (errors: any) => {
+    // Scroll to first error field
+    const firstErrorField = Object.keys(errors)[0]
+    const errorElement = document.querySelector(`[name="${firstErrorField}"]`)
+    if (errorElement) {
+      setTimeout(() => {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        ;(errorElement as HTMLElement).focus()
+      }, 100)
     }
   }
 
@@ -117,9 +152,9 @@ export function ProductForm({ product, categories }: { product?: Product; catego
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6 max-w-2xl">
         {error && (
-          <div className="p-4 border border-destructive rounded-lg bg-destructive/10 text-destructive">
+          <div ref={errorRef} className="p-4 border border-destructive rounded-lg bg-destructive/10 text-destructive">
             {error}
           </div>
         )}

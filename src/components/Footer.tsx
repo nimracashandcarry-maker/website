@@ -5,11 +5,11 @@ import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
 
 // UPDATE THESE VALUES WITH YOUR ACTUAL BUSINESS INFORMATION
 const BUSINESS_INFO = {
-  name: 'Nimra Shop',
+  name: 'NimraCashAndCarry',
   description: 'Your trusted partner for premium catering supplies and food packaging. Quality products at wholesale prices.',
   address: '123 Business Street, Dublin, Ireland',
   phone: '+353 1 234 5678',
-  email: 'info@nimrashop.com',
+  email: 'info@nimracashandcarry.com',
   social: {
     facebook: 'https://facebook.com',
     instagram: 'https://instagram.com',

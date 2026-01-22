@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { updateOrderStatus } from '@/lib/actions/admin/orders'
+import { updateOrderStatus, deleteOrder } from '@/lib/actions/admin/orders'
 import { Order } from '@/types/database'
 import {
   Table,
@@ -27,13 +27,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Eye, Search, X } from 'lucide-react'
+import { Eye, Search, X, AlertTriangle, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 export function OrdersTable({ orders }: { orders: Order[] }) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('pending')
@@ -47,6 +48,22 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
       alert('Failed to update order status')
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return
+    }
+    
+    setDeleting(orderId)
+    try {
+      await deleteOrder(orderId)
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      alert('Failed to delete order')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -167,14 +184,23 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
-                <TableRow key={order.id}>
+              filteredOrders.map((order) => {
+                const hasNoItems = !order.items || order.items.length === 0
+                return (
+                <TableRow key={order.id} className={hasNoItems ? 'bg-orange-50/50 dark:bg-orange-950/10' : ''}>
                   <TableCell className="font-mono text-sm">
-                    {order.id.substring(0, 8)}...
+                    <div className="flex items-center gap-2">
+                      {hasNoItems && (
+                        <span title="No items in order">
+                          <AlertTriangle className="h-4 w-4 text-orange-500" />
+                        </span>
+                      )}
+                      {order.id.substring(0, 8)}...
+                    </div>
                   </TableCell>
                   <TableCell>{order.customer_name}</TableCell>
                   <TableCell>{order.customer_email}</TableCell>
-                  <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                  <TableCell>€{order.total_amount.toFixed(2)}</TableCell>
                   <TableCell>
                     <Select
                       value={order.status}
@@ -200,20 +226,32 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                     {format(new Date(order.created_at), 'MMM dd, yyyy')}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedOrder(order)
-                        setIsDialogOpen(true)
-                      }}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      View
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedOrder(order)
+                          setIsDialogOpen(true)
+                        }}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteOrder(order.id)}
+                        disabled={deleting === order.id}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
+                )
+              })
             )}
           </TableBody>
         </Table>
@@ -267,37 +305,68 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
 
               <div>
                 <h3 className="font-semibold mb-2">Order Items</h3>
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead className="text-right">Subtotal</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedOrder.items?.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{item.product_name}</TableCell>
-                          <TableCell>${item.product_price.toFixed(2)}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell className="text-right">
-                            ${(item.product_price * item.quantity).toFixed(2)}
-                          </TableCell>
+                {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Quantity</TableHead>
+                          <TableHead className="text-right">Subtotal</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedOrder.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {item.product_name}
+                                {!item.product_id && (
+                                  <span className="text-xs text-orange-500 bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded">
+                                    Deleted
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>€{item.product_price.toFixed(2)}</TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell className="text-right">
+                              €{(item.product_price * item.quantity).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="border border-dashed border-orange-300 bg-orange-50 dark:bg-orange-950/20 rounded-lg p-6 text-center">
+                    <AlertTriangle className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+                    <p className="text-orange-600 dark:text-orange-400 font-medium">No items in this order</p>
+                    <p className="text-sm text-muted-foreground mt-1 mb-4">
+                      This order appears to be incomplete or was created without products.
+                    </p>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        handleDeleteOrder(selectedOrder.id)
+                        setIsDialogOpen(false)
+                      }}
+                      disabled={deleting === selectedOrder.id}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete This Order
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Amount:</span>
                   <span className="text-2xl font-bold">
-                    ${selectedOrder.total_amount.toFixed(2)}
+                    €{selectedOrder.total_amount.toFixed(2)}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">

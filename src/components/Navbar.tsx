@@ -89,7 +89,7 @@ export function Navbar() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: string, session: { user: SupabaseUser | null } | null) => {
       setUser(session?.user ?? null)
     })
 

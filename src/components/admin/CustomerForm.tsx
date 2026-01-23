@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createCustomer, updateCustomer } from '@/lib/actions/admin/customers'
@@ -85,7 +85,7 @@ export function CustomerForm({ customer }: { customer?: Customer }) {
     }
   }, [form.formState.errors])
 
-  const onError = (errors: any) => {
+  const onError = (errors: FieldErrors<CustomerFormValues>) => {
     // Scroll to first error field
     const firstErrorField = Object.keys(errors)[0]
     const errorElement = document.querySelector(`[name="${firstErrorField}"]`)

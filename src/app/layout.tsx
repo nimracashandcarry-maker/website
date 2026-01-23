@@ -23,8 +23,41 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NimraCashAndCarry - E-commerce Store",
-  description: "A modern e-commerce application built with Next.js and Supabase",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://nimracashandcarry.com"),
+  title: {
+    default: "Nimra Cash & Carry - Your Kitchen Supplier",
+    template: "%s | Nimra Cash & Carry",
+  },
+  description: "Your trusted kitchen supplier offering quality products at wholesale prices. Shop cookware, utensils, appliances and more.",
+  keywords: ["kitchen supplier", "wholesale", "cookware", "utensils", "cash and carry", "Nimra"],
+  authors: [{ name: "Nimra Cash & Carry" }],
+  icons: {
+    icon: "/c_logo.png",
+    shortcut: "/c_logo.png",
+    apple: "/c_logo.png",
+  },
+  openGraph: {
+    title: "Nimra Cash & Carry - Your Kitchen Supplier",
+    description: "Your trusted kitchen supplier offering quality products at wholesale prices.",
+    url: "https://nimracashandcarry.com",
+    siteName: "Nimra Cash & Carry",
+    images: [
+      {
+        url: "/c_logo.png",
+        width: 512,
+        height: 512,
+        alt: "Nimra Cash & Carry Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nimra Cash & Carry - Your Kitchen Supplier",
+    description: "Your trusted kitchen supplier offering quality products at wholesale prices.",
+    images: ["/c_logo.png"],
+  },
 };
 
 export default function RootLayout({

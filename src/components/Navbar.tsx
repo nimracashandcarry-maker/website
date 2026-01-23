@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
 import { createClient } from '@/lib/supabase/client'
@@ -117,7 +118,7 @@ export function Navbar({ initialCategories }: NavbarProps) {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out px-4 py-4",
+          "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out px-4 py-2",
           showTransparent
             ? "bg-transparent border-transparent"
             : "bg-background/80 backdrop-blur-md border-b shadow-sm py-3"
@@ -125,20 +126,31 @@ export function Navbar({ initialCategories }: NavbarProps) {
       >
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="bg-primary text-primary-foreground p-1 rounded-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <Image
+                  src="/c_logo.png"
+                  alt="NimraCashAndCarry"
+                  width={240}
+                  height={80}
+                  className="h-18 w-auto object-contain relative z-10"
+                  priority
+                />
               </div>
-              <span className={cn(
-                "text-2xl font-bold tracking-tight transition-colors",
-                showTransparent ? "text-white" : "text-foreground"
-              )}>
-                NimraCashAndCarry
-              </span>
+              <div className="hidden sm:flex flex-col" style={{ fontFamily: 'var(--font-manrope)' }}>
+                <span className={cn(
+                  "text-2xl font-extrabold tracking-tight leading-none",
+                  showTransparent ? "text-white" : "text-foreground"
+                )}>
+                  Nimra
+                </span>
+                <span className={cn(
+                  "text-xs font-semibold tracking-[0.15em] uppercase",
+                  showTransparent ? "text-white/80" : "text-primary"
+                )}>
+                  Cash & Carry
+                </span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}

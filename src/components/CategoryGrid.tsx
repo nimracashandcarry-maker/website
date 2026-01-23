@@ -3,7 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { Category } from '@/types/database'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
@@ -22,37 +21,22 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
         <section className="py-20 bg-muted/30">
             <div className="container mx-auto px-4">
                 <div className="text-center max-w-2xl mx-auto mb-16">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-3xl md:text-5xl font-bold mb-4"
-                    >
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4">
                         Shop by Category
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                        className="text-muted-foreground text-lg"
-                    >
+                    </h2>
+                    <p className="text-muted-foreground text-lg">
                         Explore our wide range of premium collections
-                    </motion.p>
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px] md:auto-rows-[400px]">
-                    {categories.slice(0, 5).map((category, index) => (
-                        <motion.div
+                    {categories.slice(0, 5).map((category) => (
+                        <div
                             key={category.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
                             className={cn(
                                 "group relative overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-xl transition-all duration-500",
                                 // First item spans 2 columns on lg screens if we have 3+ items
-                                index === 0 && categories.length >= 3 ? "lg:col-span-2" : "col-span-1",
+                                categories.indexOf(category) === 0 && categories.length >= 3 ? "lg:col-span-2" : "col-span-1",
                                 // if we have 4 or 5 items, maybe make the 4th item span 2 columns? Let's keep it simple for now, maybe just first one big
                             )}
                         >
@@ -79,7 +63,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
                                     </div>
                                 </div>
                             </Link>
-                        </motion.div>
+                        </div>
                     ))}
 
                     {categories.length > 5 && (

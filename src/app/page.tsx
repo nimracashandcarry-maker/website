@@ -29,14 +29,14 @@ async function FeaturedProductsSection() {
 
   return (
     <section className="py-20 container mx-auto px-4">
-      <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-4">
         <div className="max-w-2xl">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Featured Products</h2>
-          <p className="text-lg text-muted-foreground">Hand-picked selections just for you</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-left">Featured Products</h2>
+          <p className="text-lg text-muted-foreground text-left">Hand-picked selections just for you</p>
         </div>
         <Link
           href="/products"
-          className="group flex items-center gap-2 text-primary font-medium hover:text-primary/80 transition-colors"
+          className="group flex items-center gap-2 text-primary font-medium hover:text-primary/80 transition-colors self-start md:self-end"
         >
           View All Products
           <span className="group-hover:translate-x-1 transition-transform">→</span>

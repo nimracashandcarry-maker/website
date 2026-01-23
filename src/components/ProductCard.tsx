@@ -3,7 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion } from 'framer-motion'
 import { Product } from '@/types/database'
 import { QuickAddToCart } from './QuickAddToCart'
 import { Badge } from '@/components/ui/badge'
@@ -14,13 +13,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="group relative bg-card rounded-xl overflow-hidden border border-border/50 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+        <div
+            className="group relative bg-card rounded-xl overflow-hidden border border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
         >
             <Link href={`/products/${product.slug}`} className="block relative w-full pt-[100%] bg-muted/20 overflow-hidden">
                 {product.image_url ? (
@@ -71,6 +65,6 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </div>
     )
 }

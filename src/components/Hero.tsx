@@ -8,7 +8,7 @@ import { ArrowRight } from 'lucide-react'
 
 export function Hero() {
     return (
-        <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-background pt-20 md:pt-0">
+        <div className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-background md:pt-0">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
                 <Image

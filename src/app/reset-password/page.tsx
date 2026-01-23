@@ -180,7 +180,7 @@ function ResetPasswordForm() {
         <div className="container flex h-16 items-center justify-center">
           <Link href="/" className="p-0">
             <Image
-              src="/logo.png"
+              src="/c_logo.png"
               alt="NimraCashAndCarry"
               width={120}
               height={40}

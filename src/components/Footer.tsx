@@ -1,15 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
 
 // UPDATE THESE VALUES WITH YOUR ACTUAL BUSINESS INFORMATION
 const BUSINESS_INFO = {
-  name: 'Nimra Shop',
+  name: 'NimraCashAndCarry',
   description: 'Your trusted partner for premium catering supplies and food packaging. Quality products at wholesale prices.',
-  address: '123 Business Street, Dublin, Ireland',
-  phone: '+353 1 234 5678',
-  email: 'info@nimrashop.com',
+  address: 'BRITAIN PLACE . DUBLIN 1 - D01N8V0',
+  phone: '+353 1 878 3430',
+  email: 'nimracashandcarry@gmail.com',
   social: {
     facebook: 'https://facebook.com',
     instagram: 'https://instagram.com',
@@ -41,15 +42,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold">{BUSINESS_INFO.name}</span>
+            <Link href="/" className="flex items-center mb-4 p-0">
+              <Image
+                src="/c_logo.png"
+                alt={BUSINESS_INFO.name}
+                width={240}
+                height={80}
+                className="h-18 w-auto object-contain"
+                style={{ background: 'transparent' }}
+              />
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
               {BUSINESS_INFO.description}
@@ -103,9 +104,9 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Customer Account */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Customer Service</h3>
+            <h3 className="font-semibold text-lg mb-4">Services</h3>
             <ul className="space-y-3">
               {customerLinks.map((link) => (
                 <li key={link.name}>

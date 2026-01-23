@@ -412,7 +412,7 @@ export default function CheckoutPage() {
                         )}
                         <div className="flex-1">
                           <h3 className="font-semibold mb-1">{item.product.name}</h3>
-                          <p className="text-muted-foreground text-sm">${item.product.price}</p>
+                          <p className="text-muted-foreground text-sm">€{item.product.price}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
@@ -448,7 +448,7 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <span className="font-semibold">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          €{(item.product.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -457,7 +457,7 @@ export default function CheckoutPage() {
               <div className="border-t pt-3">
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${getTotal().toFixed(2)}</span>
+                  <span>€{getTotal().toFixed(2)}</span>
                 </div>
               </div>
             </div>

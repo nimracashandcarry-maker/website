@@ -63,7 +63,7 @@ export default async function OrderConfirmationPage({
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold">Total:</span>
-                    <span className="text-lg font-bold">${order.total_amount.toFixed(2)}</span>
+                    <span className="text-lg font-bold">€{order.total_amount.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -105,10 +105,10 @@ export default async function OrderConfirmationPage({
                   {order.items.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.product_name}</TableCell>
-                      <TableCell>${item.product_price.toFixed(2)}</TableCell>
+                      <TableCell>€{item.product_price.toFixed(2)}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell className="text-right">
-                        ${(item.product_price * item.quantity).toFixed(2)}
+                        €{(item.product_price * item.quantity).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}

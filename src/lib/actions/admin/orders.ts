@@ -27,4 +27,37 @@ export async function updateOrderStatus(
   revalidatePath('/admin/orders')
 }
 
+export async function deleteOrder(orderId: string) {
+  const admin = await isAdmin()
+  if (!admin) {
+    throw new Error('Unauthorized')
+  }
+
+  const supabase = await createClient()
+
+  // First delete order items (if any)
+  const { error: itemsError } = await supabase
+    .from('order_items')
+    .delete()
+    .eq('order_id', orderId)
+
+  if (itemsError) {
+    console.error('Error deleting order items:', itemsError)
+    throw new Error(itemsError.message || 'Failed to delete order items')
+  }
+
+  // Then delete the order
+  const { error: orderError } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', orderId)
+
+  if (orderError) {
+    console.error('Error deleting order:', orderError)
+    throw new Error(orderError.message || 'Failed to delete order')
+  }
+
+  revalidatePath('/admin/orders')
+}
+
 

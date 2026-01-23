@@ -179,7 +179,7 @@ export function SearchBar({ onClose, className, inputClassName, showTransparent 
                   )}
                 </div>
                 <div className="text-sm font-semibold text-primary">
-                  Rs {product.price.toLocaleString()}
+                  €{product.price.toLocaleString()}
                 </div>
               </Link>
             ))}

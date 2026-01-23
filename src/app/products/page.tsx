@@ -80,7 +80,7 @@ async function ProductsGrid({ searchQuery }: { searchQuery: string }) {
             )}
           </CardHeader>
           <CardContent className="flex-1">
-            <p className="text-2xl font-bold">${product.price}</p>
+            <p className="text-2xl font-bold">€{product.price}</p>
           </CardContent>
           <CardFooter>
             <Suspense fallback={<QuickAddToCartSkeleton />}>

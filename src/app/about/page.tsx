@@ -26,7 +26,7 @@ export default function AboutPage() {
                             transition={{ duration: 0.6 }}
                             className="text-4xl md:text-6xl font-bold mb-6"
                         >
-                            About Nimra Cash & Carry
+                            About NimraCashAndCarry
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
@@ -110,7 +110,7 @@ export default function AboutPage() {
                     <div className="container mx-auto px-4">
                         <h2 className="text-3xl font-bold mb-6">Ready to Partner With Us?</h2>
                         <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-                            Join thousands of satisfied customers who trust Nimra Cash & Carry for their business needs.
+                            Join thousands of satisfied customers who trust NimraCashAndCarry for their business needs.
                         </p>
                         <Button asChild size="lg" className="rounded-full px-8 text-lg">
                             <Link href="/contact">Get in Touch</Link>

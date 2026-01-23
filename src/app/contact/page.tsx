@@ -19,18 +19,18 @@ import {
 
 // UPDATE THESE VALUES WITH YOUR ACTUAL BUSINESS INFORMATION
 const BUSINESS_INFO = {
-  name: 'Nimra Shop',
-  address: '123 Business Street, Dublin, Ireland',
-  phone: '+353 1 234 5678',
-  email: 'info@nimrashop.com',
+  name: 'NimraCashAndCarry',
+  address: 'BRITAIN PLACE . DUBLIN 1 - D01N8V0',
+  phone: '+353 1 878 3430',
+  email: 'nimracashandcarry@gmail.com',
   hours: {
-    weekdays: '9:00 AM - 6:00 PM',
-    saturday: '10:00 AM - 4:00 PM',
-    sunday: 'Closed'
+    weekdays: '12:00 PM - 8:00 PM',
+    saturday: '12:00 PM - 8:00 PM',
+    sunday: '12:00 PM - 8:00 PM'
   },
-  // Replace with your actual Google Maps embed URL
-  // To get this: Go to Google Maps → Search your address → Click Share → Embed a map → Copy the src URL
-  mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2381.7475945671445!2d-6.2603099!3d53.3498053!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48670e844f7c3c1f%3A0x2600c7a819c83012!2sDublin%2C%20Ireland!5e0!3m2!1sen!2s!4v1234567890'
+  // Google Maps embed URL for BRITAIN PLACE, DUBLIN 1, D01N8V0
+  // To get the exact embed URL: Go to Google Maps → Search "BRITAIN PLACE DUBLIN 1 D01N8V0" → Click Share → Embed a map → Copy the src URL
+  mapEmbedUrl: `https://www.google.com/maps?q=${encodeURIComponent('BRITAIN PLACE, DUBLIN 1, D01N8V0, Ireland')}&output=embed`
 }
 
 export default function ContactPage() {
@@ -122,7 +122,7 @@ export default function ContactPage() {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="John Doe"
+                        placeholder="Your full name"
                         required
                       />
                     </div>
@@ -134,7 +134,7 @@ export default function ContactPage() {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="john@example.com"
+                        placeholder="mail@example.com"
                         required
                       />
                     </div>
@@ -238,9 +238,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold">Business Hours</h3>
                       <div className="text-muted-foreground space-y-1">
-                        <p>Monday - Friday: {BUSINESS_INFO.hours.weekdays}</p>
-                        <p>Saturday: {BUSINESS_INFO.hours.saturday}</p>
-                        <p>Sunday: {BUSINESS_INFO.hours.sunday}</p>
+                        <p>Monday to Sunday: 12:00 PM - 8:00 PM</p>
                       </div>
                     </div>
                   </div>

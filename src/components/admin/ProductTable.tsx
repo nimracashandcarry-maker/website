@@ -207,7 +207,7 @@ export function ProductTable({ products }: { products: Product[] }) {
                   <TableCell>
                     {product.category ? product.category.name : '—'}
                   </TableCell>
-                  <TableCell>${product.price}</TableCell>
+                  <TableCell>€{product.price}</TableCell>
                   <TableCell>
                     {new Date(product.created_at).toLocaleDateString()}
                   </TableCell>

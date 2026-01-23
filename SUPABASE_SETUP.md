@@ -1,6 +1,6 @@
 # Supabase Database Setup Guide
 
-This guide contains all SQL commands needed to set up your Supabase database for the Nimra Shop e-commerce application.
+This guide contains all SQL commands needed to set up your Supabase database for the NimraCashAndCarry e-commerce application.
 
 ## Prerequisites
 

@@ -113,10 +113,7 @@ export function Navbar({ initialCategories }: NavbarProps) {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
+      <nav
         className={cn(
           "fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out px-4 py-2",
           showTransparent
@@ -424,7 +421,7 @@ export function Navbar({ initialCategories }: NavbarProps) {
             </div>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* Mobile Search Overlay */}
       <AnimatePresence>

@@ -57,6 +57,14 @@ CREATE POLICY "Admins can view all orders" ON orders
 CREATE POLICY "Admins can update orders" ON orders
   FOR UPDATE USING (is_admin());
 
+-- Admin can delete orders
+CREATE POLICY "Admins can delete orders" ON orders
+  FOR DELETE USING (is_admin());
+
+-- Admin can delete order items
+CREATE POLICY "Admins can delete order items" ON order_items
+  FOR DELETE USING (is_admin());
+
 -- Public can create order items
 CREATE POLICY "Anyone can create order items" ON order_items
   FOR INSERT WITH CHECK (true);

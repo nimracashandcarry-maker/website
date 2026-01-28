@@ -128,24 +128,55 @@ export async function getCustomers() {
   // Allow both admin and employees to view customers
   const admin = await isAdmin()
   const employee = await isEmployee()
-  
+
   if (!admin && !employee) {
     throw new Error('Unauthorized')
   }
 
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('is_active', true)
-    .order('name', { ascending: true })
 
-  if (error) {
-    console.error('Error fetching customers:', error)
-    return []
+  // For admins, show all active approved customers (pending ones shown separately)
+  // For employees, only show approved active customers
+  if (admin) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('is_active', true)
+      .eq('approval_status', 'approved')
+      .order('name', { ascending: true })
+
+    if (error) {
+      // If approval_status column doesn't exist, try without that filter
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true })
+
+      if (fallbackError) {
+        console.error('Error fetching customers for admin:', fallbackError)
+        return []
+      }
+      return fallbackData || []
+    }
+
+    return data || []
+  } else {
+    // Employee - only show approved active customers
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('is_active', true)
+      .eq('approval_status', 'approved')
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching customers:', error)
+      return []
+    }
+
+    return data || []
   }
-
-  return data || []
 }
 
 export async function getCustomerById(id: string) {
@@ -180,7 +211,7 @@ export async function deleteCustomer(id: string) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('customers')
-    .update({ is_active: false })
+    .delete()
     .eq('id', id)
 
   if (error) {
@@ -191,7 +222,7 @@ export async function deleteCustomer(id: string) {
   revalidatePath('/admin/customers')
 }
 
-export async function searchCustomers(query: string) {
+export async function searchCustomers(searchQuery: string) {
   const admin = await isAdmin()
   const employee = await isEmployee()
 
@@ -200,11 +231,20 @@ export async function searchCustomers(query: string) {
   }
 
   const supabase = await createClient()
-  const { data, error } = await supabase
+
+  // Build query - admins see all, employees see only approved
+  let dbQuery = supabase
     .from('customers')
     .select('*')
     .eq('is_active', true)
-    .or(`name.ilike.%${query}%,phone.ilike.%${query}%,vat_number.ilike.%${query}%,email.ilike.%${query}%`)
+    .or(`name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%,vat_number.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
+
+  // Employees can only see approved customers
+  if (!admin) {
+    dbQuery = dbQuery.eq('approval_status', 'approved')
+  }
+
+  const { data, error } = await dbQuery
     .order('name', { ascending: true })
     .limit(50)
 
@@ -216,12 +256,12 @@ export async function searchCustomers(query: string) {
   return data || []
 }
 
-// Allow employees to create customers (returns the created customer)
+// Allow employees to create customers with pending approval status
 export async function createCustomerAsEmployee(formData: FormData) {
   const admin = await isAdmin()
-  const employee = await isEmployee()
+  const employeeCheck = await isEmployee()
 
-  if (!admin && !employee) {
+  if (!admin && !employeeCheck) {
     throw new Error('Unauthorized')
   }
 
@@ -250,6 +290,24 @@ export async function createCustomerAsEmployee(formData: FormData) {
   }
 
   const supabase = await createClient()
+
+  // Get the employee ID if the user is an employee
+  let employeeId = null
+  if (!admin && employeeCheck) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: employeeData } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      employeeId = employeeData?.id
+    }
+  }
+
+  // Admins create approved customers, employees create pending customers
+  const approvalStatus = admin ? 'approved' : 'pending'
+
   const { data, error } = await supabase
     .from('customers')
     .insert({
@@ -261,6 +319,8 @@ export async function createCustomerAsEmployee(formData: FormData) {
       eir: validatedData.eir || null,
       vat_number: validatedData.vat_number,
       is_active: true,
+      approval_status: approvalStatus,
+      created_by_employee_id: employeeId,
     })
     .select()
     .single()
@@ -272,5 +332,72 @@ export async function createCustomerAsEmployee(formData: FormData) {
 
   revalidatePath('/admin/customers')
   return data
+}
+
+// Get pending customers for admin approval
+export async function getPendingCustomers() {
+  const admin = await isAdmin()
+  if (!admin) {
+    throw new Error('Unauthorized')
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('customers')
+    .select(`
+      *,
+      created_by_employee:employees!created_by_employee_id(name, employee_id)
+    `)
+    .eq('approval_status', 'pending')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching pending customers:', error)
+    return []
+  }
+
+  return data || []
+}
+
+// Approve a customer
+export async function approveCustomer(id: string) {
+  const admin = await isAdmin()
+  if (!admin) {
+    throw new Error('Unauthorized')
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('customers')
+    .update({ approval_status: 'approved' })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error approving customer:', error)
+    throw new Error(error.message || 'Failed to approve customer')
+  }
+
+  revalidatePath('/admin/customers')
+}
+
+// Reject a customer (deletes from database)
+export async function rejectCustomer(id: string) {
+  const admin = await isAdmin()
+  if (!admin) {
+    throw new Error('Unauthorized')
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error rejecting customer:', error)
+    throw new Error(error.message || 'Failed to reject customer')
+  }
+
+  revalidatePath('/admin/customers')
 }
 

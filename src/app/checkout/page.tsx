@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { createOrder } from '@/lib/actions/orders'
 import { getUserDetails, saveUserDetails } from '@/lib/actions/user-details'
 import { checkIsEmployee } from '@/lib/actions/auth'
+import { createCustomerAsEmployee } from '@/lib/actions/admin/customers'
 import { Navbar } from '@/components/Navbar'
 import { CustomerSelector } from '@/components/CustomerSelector'
 import { Button } from '@/components/ui/button'
@@ -160,7 +161,7 @@ export default function CheckoutPage() {
 
   const onSubmit = async (data: CheckoutFormValues) => {
     setError('')
-    
+
     // For employees, require customer selection
     if (isEmployee && !selectedCustomer) {
       setError('Please select a customer')
@@ -176,11 +177,30 @@ export default function CheckoutPage() {
           quantity: item.quantity,
         }))
 
+        // If this is a new customer (created by employee), save them first
+        let customerId: string | undefined
+        if (selectedCustomer && 'isNew' in selectedCustomer && selectedCustomer.isNew) {
+          // Create the new customer with pending approval status
+          const formData = new FormData()
+          formData.append('name', selectedCustomer.name)
+          formData.append('email', selectedCustomer.email || '')
+          formData.append('phone', selectedCustomer.phone)
+          formData.append('shipping_address', selectedCustomer.shipping_address)
+          formData.append('city', selectedCustomer.city || '')
+          formData.append('eir', selectedCustomer.eir || '')
+          formData.append('vat_number', selectedCustomer.vat_number)
+
+          const newCustomer = await createCustomerAsEmployee(formData)
+          customerId = newCustomer.id
+        } else if (selectedCustomer && 'id' in selectedCustomer) {
+          customerId = selectedCustomer.id
+        }
+
         // Create the order
         const orderId = await createOrder({
           ...data,
           items: orderItems,
-          customer_id: selectedCustomer && 'id' in selectedCustomer ? selectedCustomer.id : undefined,
+          customer_id: customerId,
         })
 
         // Save user details for future use (only for regular users, not employees)

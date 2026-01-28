@@ -134,19 +134,30 @@ export async function deleteEmployee(id: string) {
     throw new Error('Employee not found')
   }
 
-  // Delete employee record (this will cascade or we can soft delete)
-  const { error: deleteError } = await supabase
-    .from('employees')
-    .update({ is_active: false })
-    .eq('id', id)
-
-  if (deleteError) {
-    console.error('Error deleting employee:', deleteError)
-    throw new Error(deleteError.message || 'Failed to delete employee')
+  // Use service role key to delete the auth user
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceRoleKey) {
+    throw new Error('Server configuration error: SUPABASE_SERVICE_ROLE_KEY not set')
   }
 
-  // Optionally delete the auth user (uncomment if you want to delete the user account)
-  // await supabase.auth.admin.deleteUser(employee.user_id)
+  const supabaseAdmin = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+
+  // Delete the auth user (this will cascade and delete the employee record due to ON DELETE CASCADE)
+  const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(employee.user_id)
+
+  if (authError) {
+    console.error('Error deleting employee auth user:', authError)
+    throw new Error(authError.message || 'Failed to delete employee')
+  }
 
   revalidatePath('/admin/employees')
 }

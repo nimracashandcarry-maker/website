@@ -169,9 +169,9 @@ export function EmployeesTable({ employees }: { employees: Employee[] }) {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Deactivate Employee</DialogTitle>
+            <DialogTitle>Delete Employee</DialogTitle>
             <DialogDescription>
-              Are you sure you want to deactivate &quot;{employeeToDelete?.name}&quot;? This will prevent them from logging in.
+              Are you sure you want to permanently delete &quot;{employeeToDelete?.name}&quot;? This will remove their account and cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -187,7 +187,7 @@ export function EmployeesTable({ employees }: { employees: Employee[] }) {
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deactivating...' : 'Deactivate'}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

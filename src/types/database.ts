@@ -11,6 +11,7 @@ export type Product = {
   slug: string
   description: string | null
   price: number
+  vat_percentage: number
   image_url: string | null
   category_id: string | null
   stock: number
@@ -44,6 +45,7 @@ export type OrderItem = {
   product_id: string
   product_name: string
   product_price: number
+  vat_percentage: number
   quantity: number
   created_at: string
   product?: Product

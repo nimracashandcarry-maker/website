@@ -35,6 +35,9 @@ const productSchema = z.object({
   price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
     message: 'Price must be a positive number',
   }),
+  vat_percentage: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100, {
+    message: 'VAT must be between 0 and 100',
+  }),
   image_url: z.string().url().optional().or(z.literal('')),
   category_id: z.string().optional(),
   is_featured: z.boolean().optional(),
@@ -57,6 +60,7 @@ export function ProductForm({ product, categories }: { product?: Product; catego
       slug: product?.slug || '',
       description: product?.description || '',
       price: product?.price?.toString() || '',
+      vat_percentage: product?.vat_percentage?.toString() || '0',
       image_url: product?.image_url || '',
       category_id: product?.category_id || '__none__',
       is_featured: product?.is_featured || false,
@@ -130,6 +134,7 @@ export function ProductForm({ product, categories }: { product?: Product; catego
         formData.append('slug', data.slug)
         formData.append('description', data.description || '')
         formData.append('price', data.price)
+        formData.append('vat_percentage', data.vat_percentage)
         formData.append('image_url', imageUrl || data.image_url || '')
         // Convert "__none__" back to empty string for no category
         formData.append('category_id', data.category_id === '__none__' ? '' : (data.category_id || ''))
@@ -224,25 +229,49 @@ export function ProductForm({ product, categories }: { product?: Product; catego
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  {...field}
-                  disabled={isPending}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price (€)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {...field}
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="vat_percentage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>VAT (%)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    placeholder="e.g., 23"
+                    {...field}
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

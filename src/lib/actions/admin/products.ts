@@ -12,6 +12,9 @@ const productSchema = z.object({
   price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
     message: 'Price must be a positive number',
   }),
+  vat_percentage: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100, {
+    message: 'VAT must be between 0 and 100',
+  }).optional(),
   image_url: z.union([
     z.string().url(),
     z.literal(''),
@@ -34,6 +37,7 @@ export async function createProduct(formData: FormData) {
     slug: (formData.get('slug') as string) || '',
     description: (formData.get('description') as string) || '',
     price: (formData.get('price') as string) || '',
+    vat_percentage: (formData.get('vat_percentage') as string) || '0',
     image_url: (formData.get('image_url') as string) || '',
     category_id: (formData.get('category_id') as string) || '',
     is_featured: (formData.get('is_featured') as string) || '',
@@ -62,6 +66,7 @@ export async function createProduct(formData: FormData) {
       slug: validatedData.slug,
       description: validatedData.description || null,
       price: parseFloat(validatedData.price),
+      vat_percentage: validatedData.vat_percentage ? parseFloat(validatedData.vat_percentage) : 0,
       image_url: validatedData.image_url && validatedData.image_url !== '' ? validatedData.image_url : null,
       category_id: validatedData.category_id && validatedData.category_id !== '' ? validatedData.category_id : null,
       is_featured: validatedData.is_featured === 'true',
@@ -88,6 +93,7 @@ export async function updateProduct(id: string, formData: FormData, oldImageUrl?
     slug: formData.get('slug') as string,
     description: formData.get('description') as string,
     price: formData.get('price') as string,
+    vat_percentage: (formData.get('vat_percentage') as string) || '0',
     image_url: formData.get('image_url') as string,
     category_id: formData.get('category_id') as string,
     is_featured: formData.get('is_featured') as string,
@@ -118,6 +124,7 @@ export async function updateProduct(id: string, formData: FormData, oldImageUrl?
       slug: validatedData.slug,
       description: validatedData.description || null,
       price: parseFloat(validatedData.price),
+      vat_percentage: validatedData.vat_percentage ? parseFloat(validatedData.vat_percentage) : 0,
       image_url: newImageUrl,
       category_id: validatedData.category_id && validatedData.category_id !== '' ? validatedData.category_id : null,
       is_featured: validatedData.is_featured === 'true',

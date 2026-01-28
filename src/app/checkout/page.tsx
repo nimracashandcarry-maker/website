@@ -174,6 +174,7 @@ export default function CheckoutPage() {
           product_id: item.product.id,
           product_name: item.product.name,
           product_price: item.product.price,
+          vat_percentage: item.product.vat_percentage || 0,
           quantity: item.quantity,
         }))
 
@@ -474,11 +475,53 @@ export default function CheckoutPage() {
                     </div>
                   ))}
               </div>
-              <div className="border-t pt-3">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total</span>
+              <div className="border-t pt-3 space-y-2">
+                {/* Subtotal */}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal (excl. VAT)</span>
                   <span>€{getTotal().toFixed(2)}</span>
                 </div>
+
+                {/* VAT Breakdown */}
+                {(() => {
+                  const vatBreakdown = items.reduce((acc, item) => {
+                    const vatRate = item.product.vat_percentage || 0
+                    if (vatRate > 0) {
+                      const itemTotal = item.product.price * item.quantity
+                      const vatAmount = itemTotal * (vatRate / 100)
+                      if (!acc[vatRate]) {
+                        acc[vatRate] = 0
+                      }
+                      acc[vatRate] += vatAmount
+                    }
+                    return acc
+                  }, {} as Record<number, number>)
+
+                  const totalVat = Object.values(vatBreakdown).reduce((sum, val) => sum + val, 0)
+
+                  return (
+                    <>
+                      {Object.entries(vatBreakdown).map(([rate, amount]) => (
+                        <div key={rate} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">VAT ({rate}%)</span>
+                          <span>€{amount.toFixed(2)}</span>
+                        </div>
+                      ))}
+                      {totalVat > 0 && (
+                        <div className="flex justify-between font-semibold text-lg pt-2 border-t">
+                          <span>Total (incl. VAT)</span>
+                          <span>€{(getTotal() + totalVat).toFixed(2)}</span>
+                        </div>
+                      )}
+                      {totalVat === 0 && (
+                        <div className="flex justify-between font-semibold text-lg pt-2 border-t">
+                          <span>Total</span>
+                          <span>€{getTotal().toFixed(2)}</span>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
               </div>
             </div>
           </div>

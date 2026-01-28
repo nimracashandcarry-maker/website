@@ -108,20 +108,49 @@ export default function CartPage() {
             <div className="border rounded-lg p-6 sticky top-4">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
               <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal (excl. VAT)</span>
                   <span>€{getTotal().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span className="text-muted-foreground">Free</span>
-                </div>
-                <div className="border-t pt-2 mt-2">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>€{getTotal().toFixed(2)}</span>
-                  </div>
-                </div>
+
+                {/* VAT Breakdown */}
+                {(() => {
+                  const vatBreakdown = items.reduce((acc, item) => {
+                    const vatRate = item.product.vat_percentage || 0
+                    if (vatRate > 0) {
+                      const itemTotal = item.product.price * item.quantity
+                      const vatAmount = itemTotal * (vatRate / 100)
+                      if (!acc[vatRate]) {
+                        acc[vatRate] = 0
+                      }
+                      acc[vatRate] += vatAmount
+                    }
+                    return acc
+                  }, {} as Record<number, number>)
+
+                  const totalVat = Object.values(vatBreakdown).reduce((sum, val) => sum + val, 0)
+
+                  return (
+                    <>
+                      {Object.entries(vatBreakdown).map(([rate, amount]) => (
+                        <div key={rate} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">VAT ({rate}%)</span>
+                          <span>€{Number(amount).toFixed(2)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Shipping</span>
+                        <span>Free</span>
+                      </div>
+                      <div className="border-t pt-2 mt-2">
+                        <div className="flex justify-between font-semibold text-lg">
+                          <span>Total {totalVat > 0 ? '(incl. VAT)' : ''}</span>
+                          <span>€{(getTotal() + totalVat).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
               <Button
                 onClick={() => router.push('/checkout')}

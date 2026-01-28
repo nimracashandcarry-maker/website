@@ -12,7 +12,7 @@ export async function createOrder(orderData: {
   city?: string
   eir?: string
   vat_number: string
-  items: Array<{ product_id: string; product_name: string; product_price: number; quantity: number }>
+  items: Array<{ product_id: string; product_name: string; product_price: number; vat_percentage?: number; quantity: number }>
   employee_id?: string
   customer_id?: string
 }): Promise<string> {
@@ -35,9 +35,13 @@ export async function createOrder(orderData: {
   const employee = await getEmployee()
   const employeeId = orderData.employee_id || employee?.id || null
 
-  // Calculate total
+  // Calculate total including VAT
   const total_amount = orderData.items.reduce(
-    (sum, item) => sum + item.product_price * item.quantity,
+    (sum, item) => {
+      const itemSubtotal = item.product_price * item.quantity
+      const vatAmount = itemSubtotal * ((item.vat_percentage || 0) / 100)
+      return sum + itemSubtotal + vatAmount
+    },
     0
   )
 
@@ -77,6 +81,7 @@ export async function createOrder(orderData: {
     product_id: item.product_id,
     product_name: item.product_name,
     product_price: item.product_price,
+    vat_percentage: item.vat_percentage || 0,
     quantity: item.quantity,
   }))
 

@@ -312,7 +312,8 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                         <TableRow>
                           <TableHead>Product</TableHead>
                           <TableHead>Price</TableHead>
-                          <TableHead>Quantity</TableHead>
+                          <TableHead>VAT</TableHead>
+                          <TableHead>Qty</TableHead>
                           <TableHead className="text-right">Subtotal</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -330,6 +331,7 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                               </div>
                             </TableCell>
                             <TableCell>€{item.product_price.toFixed(2)}</TableCell>
+                            <TableCell>{item.vat_percentage || 0}%</TableCell>
                             <TableCell>{item.quantity}</TableCell>
                             <TableCell className="text-right">
                               €{(item.product_price * item.quantity).toFixed(2)}
@@ -363,12 +365,61 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
               </div>
 
               <div className="border-t pt-4">
+                {selectedOrder.items && selectedOrder.items.length > 0 && (() => {
+                  const subtotal = selectedOrder.items.reduce(
+                    (sum, item) => sum + item.product_price * item.quantity,
+                    0
+                  )
+                  const vatBreakdown = selectedOrder.items.reduce((acc, item) => {
+                    const vatRate = item.vat_percentage || 0
+                    if (vatRate > 0) {
+                      const itemTotal = item.product_price * item.quantity
+                      const vatAmount = itemTotal * (vatRate / 100)
+                      if (!acc[vatRate]) {
+                        acc[vatRate] = 0
+                      }
+                      acc[vatRate] += vatAmount
+                    }
+                    return acc
+                  }, {} as Record<number, number>)
+                  const totalVat = Object.values(vatBreakdown).reduce((sum, val) => sum + val, 0)
+                  const grandTotal = subtotal + totalVat
+
+                  return (
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal (excl. VAT)</span>
+                        <span>€{subtotal.toFixed(2)}</span>
+                      </div>
+                      {Object.entries(vatBreakdown).map(([rate, amount]) => (
+                        <div key={rate} className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">VAT ({rate}%)</span>
+                          <span>€{Number(amount).toFixed(2)}</span>
+                        </div>
+                      ))}
+                      {totalVat > 0 && (
+                        <div className="flex justify-between text-sm font-medium pt-2 border-t">
+                          <span>Total VAT</span>
+                          <span>€{totalVat.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center pt-2 border-t">
+                        <span className="text-lg font-semibold">Total (incl. VAT):</span>
+                        <span className="text-2xl font-bold">
+                          €{grandTotal.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })()}
+                {(!selectedOrder.items || selectedOrder.items.length === 0) && (
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Amount:</span>
                   <span className="text-2xl font-bold">
                     €{selectedOrder.total_amount.toFixed(2)}
                   </span>
                 </div>
+                )}
                 <p className="text-sm text-muted-foreground mt-2">
                   Payment Method: {selectedOrder.payment_method.replace('_', ' ').toUpperCase()}
                 </p>

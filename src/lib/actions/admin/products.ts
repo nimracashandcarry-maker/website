@@ -4,6 +4,15 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isAdmin } from '@/lib/auth'
 import { z } from 'zod'
+import { Product, ProductVariation } from '@/types/database'
+
+export type VariationInput = {
+  id?: string
+  attribute_type: string
+  name: string
+  price: number
+  is_default?: boolean
+}
 
 const productSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -26,7 +35,7 @@ const productSchema = z.object({
   is_featured: z.string().optional(),
 })
 
-export async function createProduct(formData: FormData) {
+export async function createProduct(formData: FormData, variations?: VariationInput[]) {
   const admin = await isAdmin()
   if (!admin) {
     throw new Error('Unauthorized')
@@ -59,7 +68,7 @@ export async function createProduct(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase
+  const { data: product, error } = await supabase
     .from('products')
     .insert({
       name: validatedData.name,
@@ -71,10 +80,32 @@ export async function createProduct(formData: FormData) {
       category_id: validatedData.category_id && validatedData.category_id !== '' ? validatedData.category_id : null,
       is_featured: validatedData.is_featured === 'true',
     })
+    .select()
+    .single()
 
-  if (error) {
+  if (error || !product) {
     console.error('Supabase error:', error)
-    throw new Error(error.message || 'Failed to create product')
+    throw new Error(error?.message || 'Failed to create product')
+  }
+
+  // Create variations if provided
+  if (variations && variations.length > 0) {
+    const variationsToInsert = variations.map((v) => ({
+      product_id: product.id,
+      attribute_type: v.attribute_type,
+      name: v.name,
+      price: v.price,
+      is_default: v.is_default || false,
+    }))
+
+    const { error: variationsError } = await supabase
+      .from('product_variations')
+      .insert(variationsToInsert)
+
+    if (variationsError) {
+      console.error('Error creating variations:', variationsError)
+      // Don't fail the whole operation, just log the error
+    }
   }
 
   revalidatePath('/admin/products')
@@ -82,7 +113,7 @@ export async function createProduct(formData: FormData) {
   revalidatePath('/')
 }
 
-export async function updateProduct(id: string, formData: FormData, oldImageUrl?: string | null) {
+export async function updateProduct(id: string, formData: FormData, oldImageUrl?: string | null, variations?: VariationInput[]) {
   const admin = await isAdmin()
   if (!admin) {
     throw new Error('Unauthorized')
@@ -102,7 +133,7 @@ export async function updateProduct(id: string, formData: FormData, oldImageUrl?
   const validatedData = productSchema.parse(rawData)
 
   const supabase = await createClient()
-  
+
   // Get new image URL
   const newImageUrl = validatedData.image_url && validatedData.image_url !== '' ? validatedData.image_url : null
 
@@ -133,6 +164,31 @@ export async function updateProduct(id: string, formData: FormData, oldImageUrl?
 
   if (error) {
     throw new Error(error.message)
+  }
+
+  // Update variations if provided
+  if (variations !== undefined) {
+    // Delete existing variations
+    await supabase.from('product_variations').delete().eq('product_id', id)
+
+    // Insert new variations
+    if (variations.length > 0) {
+      const variationsToInsert = variations.map((v) => ({
+        product_id: id,
+        attribute_type: v.attribute_type,
+        name: v.name,
+        price: v.price,
+        is_default: v.is_default || false,
+      }))
+
+      const { error: variationsError } = await supabase
+        .from('product_variations')
+        .insert(variationsToInsert)
+
+      if (variationsError) {
+        console.error('Error updating variations:', variationsError)
+      }
+    }
   }
 
   revalidatePath('/admin/products')

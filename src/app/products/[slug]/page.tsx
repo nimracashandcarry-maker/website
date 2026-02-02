@@ -78,7 +78,10 @@ export default async function ProductDetailPage({
               </Link>
             )}
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-            <p className="text-3xl font-bold mb-6">${product.price}</p>
+            {/* Price is shown in ProductActions with variation support */}
+            {(!product.variations || product.variations.length === 0) && (
+              <p className="text-3xl font-bold mb-6">€{product.price.toFixed(2)}</p>
+            )}
 
             {product.description && (
               <div className="mb-6">

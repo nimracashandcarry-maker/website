@@ -322,7 +322,14 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                           <TableRow key={item.id}>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                {item.product_name}
+                                <div>
+                                  {item.product_name}
+                                  {item.variation_name && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      ({item.variation_name})
+                                    </span>
+                                  )}
+                                </div>
                                 {!item.product_id && (
                                   <span className="text-xs text-orange-500 bg-orange-100 dark:bg-orange-900/30 px-1.5 py-0.5 rounded">
                                     Deleted

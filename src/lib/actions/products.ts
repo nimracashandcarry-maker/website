@@ -7,7 +7,8 @@ export async function getProducts(categoryId?: string): Promise<Product[]> {
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .order('created_at', { ascending: false })
 
@@ -31,7 +32,8 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .eq('slug', slug)
     .single()
@@ -50,7 +52,8 @@ export async function getProductById(id: string): Promise<Product | null> {
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .eq('id', id)
     .single()
@@ -65,7 +68,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 export async function getProductsByCategorySlug(categorySlug: string): Promise<Product[]> {
   const supabase = await createClient()
-  
+
   // First get the category by slug
   const { data: category } = await supabase
     .from('categories')
@@ -82,7 +85,8 @@ export async function getProductsByCategorySlug(categorySlug: string): Promise<P
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .eq('category_id', category.id)
     .order('created_at', { ascending: false })
@@ -101,7 +105,8 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
@@ -125,7 +130,8 @@ export async function searchProducts(query: string): Promise<Product[]> {
     .from('products')
     .select(`
       *,
-      category:categories(*)
+      category:categories(*),
+      variations:product_variations(*)
     `)
     .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
     .order('created_at', { ascending: false })

@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
 import { createClient } from '@/lib/supabase/client'
-import { Product } from '@/types/database'
+import { Product, ProductVariation } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ShoppingCart, Zap } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import { VariationSelector } from '@/components/VariationSelector'
 import type { User } from '@supabase/supabase-js'
 
 export function ProductActions({ product }: { product: Product }) {
@@ -18,6 +19,24 @@ export function ProductActions({ product }: { product: Product }) {
   const { toast } = useToast()
   const [quantity, setQuantity] = useState(1)
   const [user, setUser] = useState<User | null>(null)
+
+  // Find default variation or use first one
+  const defaultVariation = useMemo(() => {
+    if (!product.variations || product.variations.length === 0) return null
+    return product.variations.find((v) => v.is_default) || product.variations[0]
+  }, [product.variations])
+
+  const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(defaultVariation)
+
+  // Update selected variation when product changes
+  useEffect(() => {
+    setSelectedVariation(defaultVariation)
+  }, [defaultVariation])
+
+  // Get the effective price (variation price or base price)
+  const effectivePrice = selectedVariation ? selectedVariation.price : product.price
+
+  const hasVariations = product.variations && product.variations.length > 0
 
   useEffect(() => {
     // Check session first, which is more reliable
@@ -42,10 +61,20 @@ export function ProductActions({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     if (quantity > 0) {
-      addToCart(product, quantity)
+      // If product has variations but none selected, require selection
+      if (hasVariations && !selectedVariation) {
+        toast({
+          title: 'Please select an option',
+          description: 'Please select a variation before adding to cart.',
+          variant: 'destructive',
+        })
+        return
+      }
+      addToCart(product, quantity, selectedVariation || undefined)
+      const variationText = selectedVariation ? ` (${selectedVariation.name})` : ''
       toast({
         title: 'Added to cart',
-        description: `${quantity} x ${product.name} has been added to your cart.`,
+        description: `${quantity} x ${product.name}${variationText} has been added to your cart.`,
         variant: 'success',
       })
     }
@@ -53,7 +82,16 @@ export function ProductActions({ product }: { product: Product }) {
 
   const handleBuyNow = () => {
     if (quantity > 0) {
-      addToCart(product, quantity)
+      // If product has variations but none selected, require selection
+      if (hasVariations && !selectedVariation) {
+        toast({
+          title: 'Please select an option',
+          description: 'Please select a variation before proceeding.',
+          variant: 'destructive',
+        })
+        return
+      }
+      addToCart(product, quantity, selectedVariation || undefined)
       if (!user) {
         router.push('/login?redirect=/checkout')
       } else {
@@ -64,6 +102,27 @@ export function ProductActions({ product }: { product: Product }) {
 
   return (
     <div className="space-y-4">
+      {/* Show variation selector if product has variations */}
+      {hasVariations && product.variations && (
+        <div className="pb-4 border-b">
+          <VariationSelector
+            variations={product.variations}
+            selectedVariation={selectedVariation}
+            onSelect={setSelectedVariation}
+          />
+        </div>
+      )}
+
+      {/* Show price */}
+      <div className="text-2xl font-bold">
+        €{effectivePrice.toFixed(2)}
+        {hasVariations && selectedVariation && (
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
+            ({selectedVariation.attribute_type}: {selectedVariation.name})
+          </span>
+        )}
+      </div>
+
       <div className="flex items-center gap-4">
         <label className="text-sm font-medium">Quantity:</label>
         <Input
@@ -78,17 +137,17 @@ export function ProductActions({ product }: { product: Product }) {
         />
       </div>
       <div className="flex gap-4">
-        <Button 
-          onClick={handleAddToCart} 
-          variant="outline" 
+        <Button
+          onClick={handleAddToCart}
+          variant="outline"
           className="flex-1 cursor-pointer"
           disabled={quantity <= 0}
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
           Add to Cart
         </Button>
-        <Button 
-          onClick={handleBuyNow} 
+        <Button
+          onClick={handleBuyNow}
           className="flex-1 cursor-pointer"
           disabled={quantity <= 0}
         >

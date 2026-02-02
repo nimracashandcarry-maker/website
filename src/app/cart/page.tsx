@@ -40,68 +40,92 @@ export default function CartPage() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <div key={item.product.id} className="border rounded-lg p-4 flex gap-4">
-                {item.product.image_url ? (
-                  <div className="relative w-24 h-24 rounded overflow-hidden flex-shrink-0">
-                    <Image
-                      src={item.product.image_url}
-                      alt={item.product.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 bg-muted rounded flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs text-muted-foreground">No Image</span>
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">{item.product.name}</h3>
-                  <p className="text-muted-foreground mb-2">€{item.product.price}</p>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value) || 1
-                          updateQuantity(item.product.id, Math.max(1, val))
-                        }}
-                        className="w-16 text-center"
+            {items.map((item) => {
+              // Get the unique key for this cart item
+              const itemKey = item.variation
+                ? `${item.product.id}::${item.variation.id}`
+                : item.product.id
+              // Use variation price if available
+              const itemPrice = item.variation
+                ? item.variation.price
+                : item.product.price
+
+              return (
+                <div key={itemKey} className="border rounded-lg p-4 flex gap-4">
+                  {item.product.image_url ? (
+                    <div className="relative w-24 h-24 rounded overflow-hidden flex-shrink-0">
+                      <Image
+                        src={item.product.image_url}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
                       />
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs text-muted-foreground">No Image</span>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1">
+                      {item.product.name}
+                      {item.variation && (
+                        <span className="ml-2 text-sm font-normal text-muted-foreground">
+                          ({item.variation.attribute_type}: {item.variation.name})
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-muted-foreground mb-2">€{itemPrice.toFixed(2)}</p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            updateQuantity(
+                              item.product.id,
+                              Math.max(1, item.quantity - 1),
+                              item.variation?.id
+                            )
+                          }
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1
+                            updateQuantity(item.product.id, Math.max(1, val), item.variation?.id)
+                          }}
+                          className="w-16 text-center"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            updateQuantity(item.product.id, item.quantity + 1, item.variation?.id)
+                          }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          updateQuantity(item.product.id, item.quantity + 1)
-                        }}
+                        onClick={() => removeFromCart(item.product.id, item.variation?.id)}
                       >
-                        <Plus className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
+                      <span className="ml-auto font-semibold">
+                        €{(itemPrice * item.quantity).toFixed(2)}
+                      </span>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeFromCart(item.product.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    <span className="ml-auto font-semibold">
-                      €{(item.product.price * item.quantity).toFixed(2)}
-                    </span>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="lg:col-span-1">
@@ -117,8 +141,12 @@ export default function CartPage() {
                 {(() => {
                   const vatBreakdown = items.reduce((acc, item) => {
                     const vatRate = item.product.vat_percentage || 0
+                    // Use variation price if available
+                    const itemPrice = item.variation
+                      ? item.variation.price
+                      : item.product.price
                     if (vatRate > 0) {
-                      const itemTotal = item.product.price * item.quantity
+                      const itemTotal = itemPrice * item.quantity
                       const vatAmount = itemTotal * (vatRate / 100)
                       if (!acc[vatRate]) {
                         acc[vatRate] = 0

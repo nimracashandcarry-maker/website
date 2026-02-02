@@ -5,6 +5,16 @@ export type Category = {
   created_at: string
 }
 
+export type ProductVariation = {
+  id: string
+  product_id: string
+  name: string
+  attribute_type: string
+  price: number
+  is_default: boolean
+  created_at: string
+}
+
 export type Product = {
   id: string
   name: string
@@ -18,6 +28,7 @@ export type Product = {
   is_featured: boolean
   created_at: string
   category?: Category
+  variations?: ProductVariation[]
 }
 
 export type Order = {
@@ -47,6 +58,8 @@ export type OrderItem = {
   product_price: number
   vat_percentage: number
   quantity: number
+  variation_id: string | null
+  variation_name: string | null
   created_at: string
   product?: Product
 }
@@ -54,6 +67,7 @@ export type OrderItem = {
 export type CartItem = {
   product: Product
   quantity: number
+  variation?: ProductVariation
 }
 
 export type UserDetails = {

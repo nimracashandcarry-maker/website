@@ -170,13 +170,24 @@ export default function CheckoutPage() {
 
     startTransition(async () => {
       try {
-        const orderItems = items.map((item) => ({
-          product_id: item.product.id,
-          product_name: item.product.name,
-          product_price: item.product.price,
-          vat_percentage: item.product.vat_percentage || 0,
-          quantity: item.quantity,
-        }))
+        const orderItems = items.map((item) => {
+          // Use variation price if available
+          const itemPrice = item.variation ? item.variation.price : item.product.price
+          // Build product name with variation info
+          const productName = item.variation
+            ? `${item.product.name} (${item.variation.attribute_type}: ${item.variation.name})`
+            : item.product.name
+
+          return {
+            product_id: item.product.id,
+            product_name: productName,
+            product_price: itemPrice,
+            vat_percentage: item.product.vat_percentage || 0,
+            quantity: item.quantity,
+            variation_id: item.variation?.id,
+            variation_name: item.variation?.name,
+          }
+        })
 
         // If this is a new customer (created by employee), save them first
         let customerId: string | undefined
@@ -414,66 +425,90 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
             <div className="border rounded-lg p-6">
               <div className="space-y-4 mb-4">
-                {items.map((item) => (
-                    <div key={item.product.id} className="border-b pb-4 last:border-b-0 last:pb-0">
-                      <div className="flex gap-4 mb-3">
-                        {item.product.image_url ? (
-                          <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0">
-                            <Image
-                              src={item.product.image_url}
-                              alt={item.product.name}
-                              fill
-                              className="object-cover"
-                            />
+                {items.map((item) => {
+                    // Create unique key for cart item
+                    const itemKey = item.variation
+                      ? `${item.product.id}::${item.variation.id}`
+                      : item.product.id
+                    // Use variation price if available
+                    const itemPrice = item.variation
+                      ? item.variation.price
+                      : item.product.price
+
+                    return (
+                      <div key={itemKey} className="border-b pb-4 last:border-b-0 last:pb-0">
+                        <div className="flex gap-4 mb-3">
+                          {item.product.image_url ? (
+                            <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0">
+                              <Image
+                                src={item.product.image_url}
+                                alt={item.product.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-20 h-20 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs text-muted-foreground">No Image</span>
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <h3 className="font-semibold mb-1">
+                              {item.product.name}
+                              {item.variation && (
+                                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                  ({item.variation.attribute_type}: {item.variation.name})
+                                </span>
+                              )}
+                            </h3>
+                            <p className="text-muted-foreground text-sm">€{itemPrice.toFixed(2)}</p>
                           </div>
-                        ) : (
-                          <div className="w-20 h-20 bg-muted rounded flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs text-muted-foreground">No Image</span>
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{item.product.name}</h3>
-                          <p className="text-muted-foreground text-sm">€{item.product.price}</p>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Label className="text-sm">Quantity:</Label>
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value) || 1
-                                updateQuantity(item.product.id, Math.max(1, val))
-                              }}
-                              className="w-16 text-center"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                updateQuantity(item.product.id, item.quantity + 1)
-                              }}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
+                            <Label className="text-sm">Quantity:</Label>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.product.id,
+                                    Math.max(1, item.quantity - 1),
+                                    item.variation?.id
+                                  )
+                                }
+                              >
+                                <Minus className="w-4 h-4" />
+                              </Button>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={item.quantity}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 1
+                                  updateQuantity(item.product.id, Math.max(1, val), item.variation?.id)
+                                }}
+                                className="w-16 text-center"
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  updateQuantity(item.product.id, item.quantity + 1, item.variation?.id)
+                                }}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
+                          <span className="font-semibold">
+                            €{(itemPrice * item.quantity).toFixed(2)}
+                          </span>
                         </div>
-                        <span className="font-semibold">
-                          €{(item.product.price * item.quantity).toFixed(2)}
-                        </span>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
               </div>
               <div className="border-t pt-3 space-y-2">
                 {/* Subtotal */}
@@ -486,8 +521,12 @@ export default function CheckoutPage() {
                 {(() => {
                   const vatBreakdown = items.reduce((acc, item) => {
                     const vatRate = item.product.vat_percentage || 0
+                    // Use variation price if available
+                    const itemPrice = item.variation
+                      ? item.variation.price
+                      : item.product.price
                     if (vatRate > 0) {
-                      const itemTotal = item.product.price * item.quantity
+                      const itemTotal = itemPrice * item.quantity
                       const vatAmount = itemTotal * (vatRate / 100)
                       if (!acc[vatRate]) {
                         acc[vatRate] = 0

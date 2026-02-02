@@ -12,7 +12,15 @@ export async function createOrder(orderData: {
   city?: string
   eir?: string
   vat_number: string
-  items: Array<{ product_id: string; product_name: string; product_price: number; vat_percentage?: number; quantity: number }>
+  items: Array<{
+    product_id: string
+    product_name: string
+    product_price: number
+    vat_percentage?: number
+    quantity: number
+    variation_id?: string
+    variation_name?: string
+  }>
   employee_id?: string
   customer_id?: string
 }): Promise<string> {
@@ -83,6 +91,8 @@ export async function createOrder(orderData: {
     product_price: item.product_price,
     vat_percentage: item.vat_percentage || 0,
     quantity: item.quantity,
+    variation_id: item.variation_id || null,
+    variation_name: item.variation_name || null,
   }))
 
   const { error: itemsError } = await supabase

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Product } from '@/types/database'
+import { Product, ProductVariation } from '@/types/database'
 import {
   Carousel,
   CarouselContent,
@@ -20,6 +20,19 @@ import {
 } from '@/components/ui/card'
 import { QuickAddToCart } from './QuickAddToCart'
 
+// Helper to get default variation
+function getDefaultVariation(product: Product): ProductVariation | null {
+  if (!product.variations || product.variations.length === 0) return null
+  return product.variations.find((v) => v.is_default) || product.variations[0]
+}
+
+// Helper to get display price (without VAT)
+function getDisplayPrice(product: Product): { price: number; variation: ProductVariation | null } {
+  const defaultVariation = getDefaultVariation(product)
+  const basePrice = defaultVariation ? defaultVariation.price : product.price
+  return { price: basePrice, variation: defaultVariation }
+}
+
 export function FeaturedProductsSlider({ products }: { products: Product[] }) {
   if (products.length === 0) {
     return null
@@ -36,44 +49,57 @@ export function FeaturedProductsSlider({ products }: { products: Product[] }) {
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
-          {products.map((product) => (
-            <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-2/3 md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full">
-                  <Link href={`/products/${product.slug}`} className="block">
-                    {product.image_url ? (
-                      <div className="relative w-full h-48 sm:h-56">
-                        <Image
-                          src={product.image_url}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-48 sm:h-56 bg-muted flex items-center justify-center">
-                        <span className="text-muted-foreground">No Image</span>
-                      </div>
-                    )}
-                  </Link>
-                  <CardHeader className="p-4">
-                    <Link href={`/products/${product.slug}`}>
-                      <CardTitle className="text-lg sm:text-xl line-clamp-2">{product.name}</CardTitle>
+          {products.map((product) => {
+            const { price, variation } = getDisplayPrice(product)
+            return (
+              <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-4/5 sm:basis-2/3 md:basis-1/2 lg:basis-1/3">
+                <div className="p-1">
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-full">
+                    <Link href={`/products/${product.slug}`} className="block">
+                      {product.image_url ? (
+                        <div className="relative w-full h-48 sm:h-56 bg-muted/30">
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            fill
+                            className="object-contain p-2"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-48 sm:h-56 bg-muted flex items-center justify-center">
+                          <span className="text-muted-foreground">No Image</span>
+                        </div>
+                      )}
                     </Link>
-                    {product.category && (
-                      <CardDescription className="text-sm">{product.category.name}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="flex-1 p-4 pt-0">
-                    <p className="text-xl sm:text-2xl font-bold">€{product.price}</p>
-                  </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <QuickAddToCart product={product} />
-                  </CardFooter>
-                </Card>
-              </div>
-            </CarouselItem>
-          ))}
+                    <CardHeader className="p-4">
+                      <Link href={`/products/${product.slug}`}>
+                        <CardTitle className="text-lg sm:text-xl line-clamp-2">{product.name}</CardTitle>
+                      </Link>
+                      {product.category && (
+                        <CardDescription className="text-sm">{product.category.name}</CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="flex-1 p-4 pt-0 flex flex-col justify-between min-h-[52px]">
+                      <div>
+                        {variation && (
+                          <p className="text-xs text-muted-foreground">{variation.attribute_type}: {variation.name}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xl sm:text-2xl font-bold">€{price.toFixed(2)}</p>
+                        {product.vat_percentage > 0 && (
+                          <p className="text-xs text-muted-foreground">VAT: {product.vat_percentage}%</p>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                      <QuickAddToCart product={product} />
+                    </CardFooter>
+                  </Card>
+                </div>
+              </CarouselItem>
+            )
+          })}
         </CarouselContent>
         <CarouselPrevious className="hidden sm:flex -left-4 md:-left-12" />
         <CarouselNext className="hidden sm:flex -right-4 md:-right-12" />

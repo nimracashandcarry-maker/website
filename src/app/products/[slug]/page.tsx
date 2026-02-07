@@ -51,12 +51,12 @@ export default async function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             {product.image_url ? (
-              <div className="relative w-full h-96 rounded-lg overflow-hidden">
+              <div className="relative w-full h-96 rounded-lg overflow-hidden bg-muted/30">
                 <Image
                   src={product.image_url}
                   alt={product.name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-4"
                   priority
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
@@ -80,7 +80,14 @@ export default async function ProductDetailPage({
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
             {/* Price is shown in ProductActions with variation support */}
             {(!product.variations || product.variations.length === 0) && (
-              <p className="text-3xl font-bold mb-6">€{product.price.toFixed(2)}</p>
+              <div className="mb-6">
+                <div className="flex items-center gap-3">
+                  <p className="text-3xl font-bold">€{product.price.toFixed(2)}</p>
+                  {product.vat_percentage > 0 && (
+                    <p className="text-sm text-muted-foreground">VAT: {product.vat_percentage}%</p>
+                  )}
+                </div>
+              </div>
             )}
 
             {product.description && (

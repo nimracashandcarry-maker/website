@@ -29,7 +29,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Product } from '@/types/database'
+import { Product, ProductVariation } from '@/types/database'
+
+// Helper to get default variation
+function getDefaultVariation(product: Product): ProductVariation | null {
+  if (!product.variations || product.variations.length === 0) return null
+  return product.variations.find((v) => v.is_default) || product.variations[0]
+}
+
+// Helper to get display price
+function getDisplayPrice(product: Product): number {
+  const defaultVariation = getDefaultVariation(product)
+  return defaultVariation ? defaultVariation.price : product.price
+}
 import { Pencil, Trash2, Search, X } from 'lucide-react'
 
 export function ProductTable({ products }: { products: Product[] }) {
@@ -207,7 +219,14 @@ export function ProductTable({ products }: { products: Product[] }) {
                   <TableCell>
                     {product.category ? product.category.name : '—'}
                   </TableCell>
-                  <TableCell>€{product.price}</TableCell>
+                  <TableCell>
+                    €{getDisplayPrice(product).toFixed(2)}
+                    {product.variations && product.variations.length > 0 && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({product.variations.length} var)
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {new Date(product.created_at).toLocaleDateString()}
                   </TableCell>

@@ -80,6 +80,10 @@ export function ProductForm({ product, categories }: { product?: Product; catego
   })
 
   const addVariation = () => {
+    // If this is the first variation and no base price is set, set a placeholder
+    if (variations.length === 0 && !form.getValues('price')) {
+      form.setValue('price', '0.01')
+    }
     setVariations([
       ...variations,
       {
@@ -188,6 +192,11 @@ export function ProductForm({ product, categories }: { product?: Product; catego
       }
     }
 
+    // If variations exist, ensure at least one is marked as default
+    if (validVariations.length > 0 && !validVariations.some((v) => v.is_default)) {
+      validVariations[0].is_default = true
+    }
+
     startTransition(async () => {
       try {
         let imageUrl = existingImageUrl || ''
@@ -200,11 +209,18 @@ export function ProductForm({ product, categories }: { product?: Product; catego
           imageUrl = await uploadProductImage(uploadFormData)
         }
 
+        // When variations exist, use the default variation's price as base price
+        let priceToSave = data.price
+        if (validVariations.length > 0) {
+          const defaultVar = validVariations.find((v) => v.is_default) || validVariations[0]
+          priceToSave = defaultVar.price
+        }
+
         const formData = new FormData()
         formData.append('name', data.name)
         formData.append('slug', data.slug)
         formData.append('description', data.description || '')
-        formData.append('price', data.price)
+        formData.append('price', priceToSave)
         formData.append('vat_percentage', data.vat_percentage)
         formData.append('image_url', imageUrl || data.image_url || '')
         // Convert "__none__" back to empty string for no category
@@ -342,34 +358,44 @@ export function ProductForm({ product, categories }: { product?: Product; catego
             <h2 className="text-lg font-semibold">Pricing</h2>
           </div>
 
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {variations.length > 0 ? 'Base Price (€) - Display Only' : 'Price (€) *'}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    {...field}
-                    disabled={isPending}
-                    className="w-full md:w-48"
-                    placeholder="0.00"
-                  />
-                </FormControl>
-                {variations.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    This is shown as &quot;From €X&quot; when variations exist
-                  </p>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Pricing Mode Info */}
+          <div className="p-4 rounded-lg border bg-muted/30">
+            <p className="text-sm font-medium mb-2">
+              {variations.length > 0
+                ? '📦 Using Variations Mode'
+                : '💰 Using Base Price Mode'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {variations.length > 0
+                ? 'Product price is determined by the default variation. The default variation will be shown on product cards.'
+                : 'Add variations below to offer different sizes, colors, or options with their own prices.'}
+            </p>
+          </div>
+
+          {/* Base Price - Only shown when no variations */}
+          {variations.length === 0 && (
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price (€) *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      {...field}
+                      disabled={isPending}
+                      className="w-full md:w-48"
+                      placeholder="0.00"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           {/* Product Variations */}
           <div className="mt-6 space-y-4 border rounded-xl p-5 bg-muted/30">
@@ -384,7 +410,9 @@ export function ProductForm({ product, categories }: { product?: Product; catego
                   )}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Add size, color, or other options with different prices
+                  {variations.length > 0
+                    ? 'The default variation price will be used on product cards'
+                    : 'Add size, color, or other options with different prices'}
                 </p>
               </div>
               <Button
@@ -409,9 +437,9 @@ export function ProductForm({ product, categories }: { product?: Product; catego
                     }`}
                   >
                     {variation.is_default && (
-                      <Badge className="absolute -top-2 left-3 text-xs">Default</Badge>
+                      <Badge className="absolute -top-2 left-3 text-xs">Default (shown on cards)</Badge>
                     )}
-                    
+
                     <div className="flex-1 min-w-[120px]">
                       <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                         Type

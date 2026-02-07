@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/contexts/CartContext'
 import { createClient } from '@/lib/supabase/client'
-import { Product } from '@/types/database'
+import { Product, ProductVariation } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart, Zap } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
@@ -17,6 +17,12 @@ export function QuickAddToCart({ product }: { product: Product }) {
   const { toast } = useToast()
   const [user, setUser] = useState<User | null>(null)
 
+  // Get default variation if exists
+  const defaultVariation = useMemo<ProductVariation | undefined>(() => {
+    if (!product.variations || product.variations.length === 0) return undefined
+    return product.variations.find((v) => v.is_default) || product.variations[0]
+  }, [product.variations])
+
   useEffect(() => {
     // Check session first, which is more reliable
     const checkAuth = async () => {
@@ -25,7 +31,7 @@ export function QuickAddToCart({ product }: { product: Product }) {
         setUser(session.user)
       }
     }
-    
+
     checkAuth()
 
     // Listen for auth state changes
@@ -41,10 +47,11 @@ export function QuickAddToCart({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product, 1)
+    addToCart(product, 1, defaultVariation)
+    const variationText = defaultVariation ? ` (${defaultVariation.name})` : ''
     toast({
       title: 'Added to cart',
-      description: `${product.name} has been added to your cart.`,
+      description: `${product.name}${variationText} has been added to your cart.`,
       variant: 'success',
     })
   }
@@ -52,7 +59,7 @@ export function QuickAddToCart({ product }: { product: Product }) {
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(product, 1)
+    addToCart(product, 1, defaultVariation)
     if (!user) {
       router.push('/login?redirect=/checkout')
     } else {

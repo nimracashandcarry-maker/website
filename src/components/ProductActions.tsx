@@ -33,7 +33,7 @@ export function ProductActions({ product }: { product: Product }) {
     setSelectedVariation(defaultVariation)
   }, [defaultVariation])
 
-  // Get the effective price (variation price or base price)
+  // Get the effective price (variation price or base price) without VAT
   const effectivePrice = selectedVariation ? selectedVariation.price : product.price
 
   const hasVariations = product.variations && product.variations.length > 0
@@ -114,12 +114,17 @@ export function ProductActions({ product }: { product: Product }) {
       )}
 
       {/* Show price */}
-      <div className="text-2xl font-bold">
-        €{effectivePrice.toFixed(2)}
+      <div>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl font-bold">€{effectivePrice.toFixed(2)}</span>
+          {product.vat_percentage > 0 && (
+            <span className="text-sm text-muted-foreground">VAT: {product.vat_percentage}%</span>
+          )}
+        </div>
         {hasVariations && selectedVariation && (
-          <span className="ml-2 text-sm font-normal text-muted-foreground">
-            ({selectedVariation.attribute_type}: {selectedVariation.name})
-          </span>
+          <p className="text-sm text-muted-foreground mt-1">
+            {selectedVariation.attribute_type}: {selectedVariation.name}
+          </p>
         )}
       </div>
 

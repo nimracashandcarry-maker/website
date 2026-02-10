@@ -1,28 +1,14 @@
-'use client'
-
-import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Product, ProductVariation } from '@/types/database'
-import { QuickAddToCart } from './QuickAddToCart'
+import { Product } from '@/types/database'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 interface ProductCardProps {
     product: Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-    // Get default variation if exists
-    const defaultVariation = useMemo<ProductVariation | null>(() => {
-        if (!product.variations || product.variations.length === 0) return null
-        return product.variations.find((v) => v.is_default) || product.variations[0]
-    }, [product.variations])
-
-    const hasVariations = product.variations && product.variations.length > 0
-
-    // Use default variation price if exists, otherwise base price (without VAT)
-    const displayPrice = defaultVariation ? defaultVariation.price : product.price
-
     return (
         <div
             className="group relative bg-card rounded-xl overflow-hidden border border-border/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
@@ -61,31 +47,12 @@ export function ProductCard({ product }: ProductCardProps) {
                     </Link>
                 </div>
 
-                <div className="mt-auto pt-4 flex flex-col justify-between min-h-[52px]">
-                    <div>
-                        {hasVariations && defaultVariation && (
-                            <span className="text-xs text-muted-foreground block">
-                                {defaultVariation.attribute_type}: {defaultVariation.name}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80 text-foreground">
-                            €{displayPrice.toFixed(2)}
-                        </span>
-                        {product.vat_percentage > 0 && (
-                            <span className="text-xs text-muted-foreground">
-                                VAT: {product.vat_percentage}%
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-border/50">
-                    {/* Visible on mobile/tablet, hidden on desktop until hover */}
-                    <div className="opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-2 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 transition-all duration-300">
-                        <QuickAddToCart product={product} />
-                    </div>
+                <div className="mt-auto pt-4">
+                    <Button asChild variant="outline" className="w-full">
+                        <Link href={`/products/${product.slug}`}>
+                            View
+                        </Link>
+                    </Button>
                 </div>
             </div>
         </div>

@@ -6,38 +6,21 @@ import { getCategoryBySlug } from '@/lib/actions/categories'
 import { getProductsByCategorySlug } from '@/lib/actions/products'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
-import { QuickAddToCart } from '@/components/QuickAddToCart'
-import {
-  ProductGridSkeleton,
-  QuickAddToCartSkeleton
-} from '@/components/skeletons'
+import { ProductGridSkeleton } from '@/components/skeletons'
 import {
   Card,
-  CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Product, ProductVariation } from '@/types/database'
+import { Button } from '@/components/ui/button'
+import { Product } from '@/types/database'
 
 // Revalidate category pages every 30 minutes
 export const revalidate = 1800
 
 // Dynamic rendering - categories are generated on-demand
 export const dynamic = 'force-dynamic'
-
-// Helper to get default variation
-function getDefaultVariation(product: Product): ProductVariation | null {
-  if (!product.variations || product.variations.length === 0) return null
-  return product.variations.find((v) => v.is_default) || product.variations[0]
-}
-
-// Helper to get display price (without VAT)
-function getDisplayPrice(product: Product): { price: number; variation: ProductVariation | null } {
-  const defaultVariation = getDefaultVariation(product)
-  const basePrice = defaultVariation ? defaultVariation.price : product.price
-  return { price: basePrice, variation: defaultVariation }
-}
 
 // Products grid component for this category
 async function CategoryProductsGrid({ slug }: { slug: string }) {
@@ -49,9 +32,7 @@ async function CategoryProductsGrid({ slug }: { slug: string }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => {
-        const { price, variation } = getDisplayPrice(product)
-        return (
+      {products.map((product) => (
           <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
             <Link href={`/products/${product.slug}`} className="block">
               {product.image_url ? (
@@ -76,27 +57,16 @@ async function CategoryProductsGrid({ slug }: { slug: string }) {
                 <CardTitle className="text-xl">{product.name}</CardTitle>
               </Link>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-between min-h-[52px]">
-              <div>
-                {variation && (
-                  <p className="text-xs text-muted-foreground">{variation.attribute_type}: {variation.name}</p>
-                )}
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-2xl font-bold">€{price.toFixed(2)}</p>
-                {product.vat_percentage > 0 && (
-                  <p className="text-xs text-muted-foreground">VAT: {product.vat_percentage}%</p>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Suspense fallback={<QuickAddToCartSkeleton />}>
-                <QuickAddToCart product={product} />
-              </Suspense>
+            <CardFooter className="mt-auto">
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/products/${product.slug}`}>
+                  View
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
         )
-      })}
+      )}
     </div>
   )
 }

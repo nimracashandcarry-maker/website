@@ -4,38 +4,21 @@ import Image from 'next/image'
 import { getProductsCached, searchProducts } from '@/lib/actions/products'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
-import { QuickAddToCart } from '@/components/QuickAddToCart'
-import {
-  ProductGridSkeleton,
-  QuickAddToCartSkeleton
-} from '@/components/skeletons'
+import { ProductGridSkeleton } from '@/components/skeletons'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Product, ProductVariation } from '@/types/database'
+import { Button } from '@/components/ui/button'
+import { Product } from '@/types/database'
 
 type SearchParams = Promise<{ search?: string }>
 
 // Cache non-search results for 30 minutes
 export const revalidate = 1800
-
-// Helper to get default variation
-function getDefaultVariation(product: Product): ProductVariation | null {
-  if (!product.variations || product.variations.length === 0) return null
-  return product.variations.find((v) => v.is_default) || product.variations[0]
-}
-
-// Helper to get display price (without VAT)
-function getDisplayPrice(product: Product): { price: number; variation: ProductVariation | null } {
-  const defaultVariation = getDefaultVariation(product)
-  const basePrice = defaultVariation ? defaultVariation.price : product.price
-  return { price: basePrice, variation: defaultVariation }
-}
 
 // Products grid component
 async function ProductsGrid({ searchQuery }: { searchQuery: string }) {
@@ -65,9 +48,7 @@ async function ProductsGrid({ searchQuery }: { searchQuery: string }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => {
-        const { price, variation } = getDisplayPrice(product)
-        return (
+      {products.map((product) => (
           <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
             <Link href={`/products/${product.slug}`} className="block">
               {product.image_url ? (
@@ -95,27 +76,16 @@ async function ProductsGrid({ searchQuery }: { searchQuery: string }) {
                 <CardDescription>{product.category.name}</CardDescription>
               )}
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-between min-h-[52px]">
-              <div>
-                {variation && (
-                  <p className="text-xs text-muted-foreground">{variation.attribute_type}: {variation.name}</p>
-                )}
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-2xl font-bold">€{price.toFixed(2)}</p>
-                {product.vat_percentage > 0 && (
-                  <p className="text-xs text-muted-foreground">VAT: {product.vat_percentage}%</p>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Suspense fallback={<QuickAddToCartSkeleton />}>
-                <QuickAddToCart product={product} />
-              </Suspense>
+            <CardFooter className="mt-auto">
+              <Button asChild variant="outline" className="w-full">
+                <Link href={`/products/${product.slug}`}>
+                  View
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
         )
-      })}
+      )}
     </div>
   )
 }

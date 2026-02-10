@@ -77,8 +77,8 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
     throw new Error('Invalid image URL')
   }
 
-  const filePath = `products/${urlParts[1]}`
-
+  const filePath = urlParts[1] 
+  
   const supabase = await createClient()
   const { error } = await supabase.storage
     .from('product-images')
